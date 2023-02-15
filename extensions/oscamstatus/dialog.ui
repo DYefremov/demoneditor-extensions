@@ -128,6 +128,7 @@ Author: Dmitriy Yefremov
                         <property name="model">readers_model</property>
                         <property name="search-column">0</property>
                         <property name="enable-grid-lines">both</property>
+                        <property name="tooltip-column">3</property>
                         <property name="activate-on-single-click">True</property>
                         <child internal-child="selection">
                           <object class="GtkTreeSelection"/>
@@ -398,7 +399,44 @@ Author: Dmitriy Yefremov
               </packing>
             </child>
             <child>
-              <placeholder/>
+              <object class="GtkBox" id="readers_count_box">
+                <property name="width-request">50</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="spacing">5</property>
+                <child>
+                  <object class="GtkImage" id="readers_count_image">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="icon-name">document-properties</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="readers_count_label">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label">0</property>
+                    <property name="ellipsize">end</property>
+                    <property name="max-width-chars">5</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="pack-type">end</property>
+                <property name="position">3</property>
+              </packing>
             </child>
           </object>
           <packing>

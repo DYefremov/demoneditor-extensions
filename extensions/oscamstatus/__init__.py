@@ -70,10 +70,15 @@ class Oscamstatus(BaseExtension):
         self._window.connect("delete-event", self.on_close_window)
 
         self._version_label = builder.get_object("version_label")
+        self._readers_count_label = builder.get_object("readers_count_label")
         self._readers_view = builder.get_object("readers_view")
         GObject.signal_new("data-changed", self._readers_view, GObject.SIGNAL_RUN_LAST,
                            GObject.TYPE_PYOBJECT, (GObject.TYPE_PYOBJECT,))
         self._readers_view.connect("data-changed", self.on_data_changed)
+        self._readers_view.connect("query-tooltip", self.on_readers_query_tooltip)
+        model = self._readers_view.get_model()
+        model.connect("row-deleted", self.on_readers_model_changed)
+        model.connect("row-inserted", self.on_readers_model_changed)
 
         self.init_auth()
 
@@ -126,6 +131,24 @@ class Oscamstatus(BaseExtension):
                     model.append(reader)
             # Removal if some readers were not found during the update.
             [model.remove(i) for i in readers.values()]
+
+    def on_readers_query_tooltip(self, view, x, y, keyboard_mode, tooltip):
+        result = view.get_dest_row_at_pos(x, y)
+        if not result:
+            return False
+
+        path, pos = result
+        data = view.get_model()[path][-1]
+        if data:
+            stats = data.get("stats")
+            tooltip.set_markup("\n".join(f'<span weight="bold">{str(k).title()}</span>: {v}' for k, v in stats.items()))
+            view.set_tooltip_row(tooltip, path)
+            return True
+
+        return False
+
+    def on_readers_model_changed(self, model, path, itr=None):
+        self._readers_count_label.set_text(str(len(model)))
 
     def on_save_settings(self, button):
         self.app.show_error_message("Not implemented yet!")
