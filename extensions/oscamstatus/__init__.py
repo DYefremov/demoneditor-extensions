@@ -27,6 +27,7 @@
 
 import json
 import os
+from enum import Enum
 from threading import Thread
 from urllib.request import (urlopen, Request, HTTPPasswordMgrWithDefaultRealm, HTTPDigestAuthHandler, build_opener,
                             install_opener)
@@ -34,6 +35,10 @@ from urllib.request import (urlopen, Request, HTTPPasswordMgrWithDefaultRealm, H
 from gi.repository import GLib, Gtk, GObject
 
 from extensions import BaseExtension
+
+
+class OSCRequest(str, Enum):
+    READERS = "part=readerlist"
 
 
 class Oscamstatus(BaseExtension):
@@ -46,31 +51,32 @@ class Oscamstatus(BaseExtension):
         app.connect("profile-changed", self.on_profile_changed)
         # Settings.
         self._host = app.app_settings.host
-        self._settings = self.get_settings()
-        self._url = f"http://{self._host}:{self._settings.get('port', '8080')}/oscamapi.json?part=readerlist"
-        refresh_interval = self._settings.get('refresh_interval', 3)
+        self._base_url = None
+        self._url = None
+        self._config = self.get_config()
+        self.init_urls()
 
         _base_path = os.path.dirname(__file__)
         builder = Gtk.Builder.new_from_file(f"{_base_path}{os.sep}dialog.ui")
-
+        # Settings.
         self._user_entry = builder.get_object("user_entry")
         self._password_entry = builder.get_object("password_entry")
         self._port_entry = builder.get_object("port_entry")
         self._refresh_button = builder.get_object("refresh_spin_button")
-        builder.get_object("apply_settings_button").connect("clicked", self.on_save_settings)
-
-        self._user_entry.set_text(self._settings.get("user", "oscam"))
-        self._password_entry.set_text(self._settings.get("password", "oscam"))
-        self._port_entry.set_text(self._settings.get("port", "8080"))
-        self._refresh_button.set_value(refresh_interval)
+        builder.get_object("apply_config_button").connect("clicked", self.on_apply_config)
 
         self._window = builder.get_object("window")
         self._window.set_title(self.LABEL)
+        refresh_interval = self._config.get('refresh_interval', 3)
         self._window.connect("show", lambda w: GLib.timeout_add_seconds(refresh_interval, self.update_status))
         self._window.connect("delete-event", self.on_close_window)
-
+        self._stack = builder.get_object("stack")
+        self._stack.connect("notify::visible-child-name", self.on_page_changed)
+        self._restart_button = builder.get_object("restart_button")
+        self._restart_button.connect("clicked", self.on_restart)
         self._version_label = builder.get_object("version_label")
         self._readers_count_label = builder.get_object("readers_count_label")
+
         self._readers_view = builder.get_object("readers_view")
         GObject.signal_new("data-changed", self._readers_view, GObject.SIGNAL_RUN_LAST,
                            GObject.TYPE_PYOBJECT, (GObject.TYPE_PYOBJECT,))
@@ -82,12 +88,16 @@ class Oscamstatus(BaseExtension):
 
         self.init_auth()
 
+    def init_urls(self):
+        self._base_url = f"http://{self._host}:{self._config.get('port', '8080')}/oscamapi.json?"
+        self._url = f"{self._base_url}{OSCRequest.READERS}"
+
     def exec(self):
         self._window.show()
 
     def init_auth(self):
         pass_mgr = HTTPPasswordMgrWithDefaultRealm()
-        pass_mgr.add_password(None, self._url, "oscam", "oscam")
+        pass_mgr.add_password(None, self._base_url, self._config.get("user", ""), self._config.get("password", ""))
         auth_handler = HTTPDigestAuthHandler(pass_mgr)
         opener = build_opener(auth_handler)
         install_opener(opener)
@@ -105,18 +115,25 @@ class Oscamstatus(BaseExtension):
         self.log("profile changed")
 
     def refresh_data(self):
+        data = None
         try:
             with urlopen(Request(self._url, data=None), timeout=2) as f:
                 if f.status == 200:
-                    self._readers_view.emit("data-changed", json.load(f))
+                    data = json.load(f)
                     self.log("Update state")
                 else:
                     self.log(f"Error: {f.status}")
         except OSError as e:
             self.log(f"Error: {e}")
 
+        GLib.idle_add(self._readers_view.emit, "data-changed", data)
+
     def on_data_changed(self, list_box, data):
         model = self._readers_view.get_model()
+        if not data:
+            model.clear()
+            return
+
         readers = {row[-1]["label"]: row.iter for row in model}
         osc = data.get("oscam", None)
         if osc:
@@ -147,14 +164,32 @@ class Oscamstatus(BaseExtension):
 
         return False
 
+    def on_restart(self, button):
+        self.app.show_error_message("Not implemented yet!")
+
     def on_readers_model_changed(self, model, path, itr=None):
         self._readers_count_label.set_text(str(len(model)))
 
-    def on_save_settings(self, button):
-        self.app.show_error_message("Not implemented yet!")
+    def on_apply_config(self, button):
+        self._config["user"] = self._user_entry.get_text()
+        self._config["password"] = self._password_entry.get_text()
+        self._config["port"] = self._port_entry.get_text()
+        self._config["refresh_interval"] = self._refresh_button.get_value()
 
-    def get_settings(self):
-        return {"port": '8080', "user": "oscam", "password": "oscam", "refresh_interval": 3}
+        self.config = self._config
+        self.init_urls()
+        self.init_auth()
+        self._stack.set_visible_child_name("readers")
+
+    def get_config(self):
+        return self.config or {"port": '8080', "user": "oscam", "password": "oscam", "refresh_interval": 3}
+
+    def on_page_changed(self, stack, param):
+        if stack.get_visible_child_name() == "settings":
+            self._user_entry.set_text(self._config.get("user", "oscam"))
+            self._password_entry.set_text(self._config.get("password", "oscam"))
+            self._port_entry.set_text(self._config.get("port", "8080"))
+            self._refresh_button.set_value(self._config.get("refresh_interval", 3))
 
     def on_close_window(self, window, event):
         """ Prevents window destroying when the close button is clicked. """

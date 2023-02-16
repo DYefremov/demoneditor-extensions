@@ -76,6 +76,7 @@ Author: Dmitriy Yefremov
           <object class="GtkBox" id="toolbar_box">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="spacing">5</property>
             <child>
               <object class="GtkStackSwitcher" id="stack_switcher">
                 <property name="visible">True</property>
@@ -92,6 +93,45 @@ Author: Dmitriy Yefremov
                 <property name="fill">True</property>
                 <property name="pack-type">end</property>
                 <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkBox" id="actions_box">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="valign">center</property>
+                <property name="margin-start">10</property>
+                <property name="spacing">5</property>
+                <child>
+                  <object class="GtkButton" id="restart_button">
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="tooltip-text" translatable="yes">Restart</property>
+                    <child>
+                      <object class="GtkImage" id="restart_button_image">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="icon-name">view-refresh</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
               </packing>
             </child>
             <style>
@@ -304,6 +344,7 @@ Author: Dmitriy Yefremov
                   <object class="GtkSpinButton" id="refresh_spin_button">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">Restart required!</property>
                     <property name="halign">end</property>
                     <property name="max-length">5</property>
                     <property name="width-chars">5</property>
@@ -321,7 +362,7 @@ Author: Dmitriy Yefremov
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton" id="apply_settings_button">
+                  <object class="GtkButton" id="apply_config_button">
                     <property name="label" translatable="yes">Apply</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
