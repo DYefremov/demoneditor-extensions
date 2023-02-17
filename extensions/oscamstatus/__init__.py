@@ -86,7 +86,7 @@ class Oscamstatus(BaseExtension):
         model.connect("row-deleted", self.on_readers_model_changed)
         model.connect("row-inserted", self.on_readers_model_changed)
 
-        self.init_auth()
+        self.init_auth(self._base_url)
 
     def init_urls(self):
         self._base_url = f"http://{self._host}:{self._config.get('port', '8080')}/oscamapi.json?"
@@ -95,9 +95,9 @@ class Oscamstatus(BaseExtension):
     def exec(self):
         self._window.show()
 
-    def init_auth(self):
+    def init_auth(self, url):
         pass_mgr = HTTPPasswordMgrWithDefaultRealm()
-        pass_mgr.add_password(None, self._base_url, self._config.get("user", ""), self._config.get("password", ""))
+        pass_mgr.add_password(None, url, self._config.get("user", ""), self._config.get("password", ""))
         auth_handler = HTTPDigestAuthHandler(pass_mgr)
         opener = build_opener(auth_handler)
         install_opener(opener)
@@ -111,7 +111,8 @@ class Oscamstatus(BaseExtension):
     def on_profile_changed(self, app, prf):
         self._readers_view.get_model().clear()
         self._host = app.app_settings.host
-        self.init_auth()
+        self.init_urls()
+        self.init_auth(self._base_url)
         self.log("profile changed")
 
     def refresh_data(self):
@@ -165,7 +166,18 @@ class Oscamstatus(BaseExtension):
         return False
 
     def on_restart(self, button):
-        self.app.show_error_message("Not implemented yet!")
+        url = f"http://{self._host}:{self._config.get('port', '8080')}/shutdown.html?action=Restart"
+        self.init_auth(url)
+        try:
+            with urlopen(Request(url, data=None), timeout=2) as f:
+                if f.status == 200:
+                    self.log("Restarting...")
+                else:
+                    self.log(f"Error: {f.status}")
+        except OSError as e:
+            self.log(e)
+
+        GLib.timeout_add_seconds(2, self.init_auth, self._base_url)
 
     def on_readers_model_changed(self, model, path, itr=None):
         self._readers_count_label.set_text(str(len(model)))
@@ -178,7 +190,7 @@ class Oscamstatus(BaseExtension):
 
         self.config = self._config
         self.init_urls()
-        self.init_auth()
+        self.init_auth(self._base_url)
         self._stack.set_visible_child_name("readers")
 
     def get_config(self):
