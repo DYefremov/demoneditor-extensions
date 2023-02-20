@@ -1,0 +1,490 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.38.2 
+
+The MIT License (MIT)
+
+Copyright (c) Dmitriy Yefremov 2023
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+Author: Dmitriy Yefremov
+
+-->
+<interface domain="demon-editor">
+  <requires lib="gtk+" version="3.22"/>
+  <!-- interface-license-type mit -->
+  <!-- interface-name Advanced streams import -->
+  <!-- interface-description Extension for DemonEditor -->
+  <!-- interface-copyright Dmitriy Yefremov 2023 -->
+  <!-- interface-authors Dmitriy Yefremov -->
+  <object class="GtkFileFilter" id="file_filter">
+    <mime-types>
+      <mime-type>application/x-mpegURL</mime-type>
+      <mime-type>vnd.apple.mpegURL</mime-type>
+    </mime-types>
+    <patterns>
+      <pattern>*.m3u*</pattern>
+    </patterns>
+  </object>
+  <object class="GtkListStore" id="filter_group_list_store">
+    <columns>
+      <!-- column-name group -->
+      <column type="gchararray"/>
+      <!-- column-name selected -->
+      <column type="gboolean"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">All groups</col>
+        <col id="1">True</col>
+      </row>
+    </data>
+  </object>
+  <object class="GtkImage" id="import_button_image">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">insert-link-symbolic</property>
+  </object>
+  <object class="GtkListStore" id="model">
+    <columns>
+      <!-- column-name logo -->
+      <column type="GdkPixbuf"/>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name group -->
+      <column type="gchararray"/>
+      <!-- column-name selected -->
+      <column type="gboolean"/>
+      <!-- column-name id -->
+      <column type="gchararray"/>
+      <!-- column-name url -->
+      <column type="gchararray"/>
+      <!-- column-name logo_url -->
+      <column type="gchararray"/>
+      <!-- column-name tooltip -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkPopover" id="groups_popover">
+    <property name="can-focus">False</property>
+    <property name="relative-to">main_box</property>
+    <property name="transitions-enabled">False</property>
+    <child>
+      <object class="GtkScrolledWindow" id="groups_scrolled_window">
+        <property name="width-request">135</property>
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="border-width">5</property>
+        <property name="hscrollbar-policy">never</property>
+        <property name="max-content-height">350</property>
+        <property name="propagate-natural-height">True</property>
+        <child>
+          <object class="GtkTreeView" id="groups_view">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="model">filter_group_list_store</property>
+            <property name="headers-visible">False</property>
+            <property name="enable-search">False</property>
+            <property name="search-column">0</property>
+            <child internal-child="selection">
+              <object class="GtkTreeSelection"/>
+            </child>
+            <child>
+              <object class="GtkTreeViewColumn" id="fiter_groups_column">
+                <property name="title" translatable="yes">Satellite</property>
+                <child>
+                  <object class="GtkCellRendererText" id="filter_group_renderer_text"/>
+                  <attributes>
+                    <attribute name="text">0</attribute>
+                  </attributes>
+                </child>
+                <child>
+                  <object class="GtkCellRendererToggle" id="filter_group_renderer_toggle">
+                    <property name="xalign">0.9800000190734863</property>
+                  </object>
+                  <attributes>
+                    <attribute name="active">1</attribute>
+                  </attributes>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkBox" id="main_box">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="orientation">vertical</property>
+    <property name="spacing">5</property>
+    <child>
+      <object class="GtkBox" id="header_box">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="spacing">5</property>
+        <child type="center">
+          <object class="GtkButtonBox" id="filter_box">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="tooltip-text" translatable="yes">Filter</property>
+            <property name="halign">center</property>
+            <property name="margin-start">5</property>
+            <property name="margin-end">5</property>
+            <property name="margin-top">5</property>
+            <property name="margin-bottom">5</property>
+            <property name="layout-style">expand</property>
+            <child>
+              <object class="GtkSearchEntry">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="primary-icon-name">edit-find-replace-symbolic</property>
+                <property name="primary-icon-activatable">False</property>
+                <property name="primary-icon-sensitive">False</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+                <property name="non-homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkMenuButton">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="focus-on-click">False</property>
+                <property name="receives-default">True</property>
+                <property name="popover">groups_popover</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Group</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="pack-type">end</property>
+                <property name="position">1</property>
+                <property name="non-homogeneous">True</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkFileChooserButton" id="file_chooser_button">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="tooltip-text" translatable="yes">Import m3u file</property>
+            <property name="margin-start">5</property>
+            <property name="margin-top">5</property>
+            <property name="margin-bottom">5</property>
+            <property name="create-folders">False</property>
+            <property name="filter">file_filter</property>
+            <property name="local-only">False</property>
+            <property name="title" translatable="yes">Select *.m3u*</property>
+            <property name="width-chars">12</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <style>
+          <class name="primary-toolbar"/>
+        </style>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">0</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkPaned">
+        <property name="height-request">200</property>
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="margin-start">5</property>
+        <property name="margin-end">5</property>
+        <property name="orientation">vertical</property>
+        <property name="wide-handle">True</property>
+        <child>
+          <object class="GtkScrolledWindow" id="input_text_view_scrolled">
+            <property name="can-focus">True</property>
+            <property name="shadow-type">in</property>
+            <child>
+              <object class="GtkTextView" id="input_text_view">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="wrap-mode">word</property>
+                <property name="indent">5</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="resize">True</property>
+            <property name="shrink">False</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkScrolledWindow" id="view_scrolled">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="shadow-type">in</property>
+            <child>
+              <object class="GtkTreeView" id="view">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="model">model</property>
+                <property name="search-column">1</property>
+                <child internal-child="selection">
+                  <object class="GtkTreeSelection"/>
+                </child>
+                <child>
+                  <object class="GtkTreeViewColumn" id="name_column">
+                    <property name="resizable">True</property>
+                    <property name="min-width">100</property>
+                    <property name="title" translatable="yes">Name</property>
+                    <property name="expand">True</property>
+                    <property name="alignment">0.5</property>
+                    <child>
+                      <object class="GtkCellRendererPixbuf" id="logo_renderer"/>
+                      <attributes>
+                        <attribute name="pixbuf">0</attribute>
+                      </attributes>
+                    </child>
+                    <child>
+                      <object class="GtkCellRendererText" id="name_renderer"/>
+                      <attributes>
+                        <attribute name="text">1</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkTreeViewColumn" id="group_column">
+                    <property name="resizable">True</property>
+                    <property name="min-width">100</property>
+                    <property name="title" translatable="yes">Group</property>
+                    <property name="expand">True</property>
+                    <property name="alignment">0.5</property>
+                    <child>
+                      <object class="GtkCellRendererText" id="group_renderer"/>
+                      <attributes>
+                        <attribute name="text">2</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkTreeViewColumn" id="selected_column">
+                    <property name="sizing">fixed</property>
+                    <property name="min-width">50</property>
+                    <property name="max-width">150</property>
+                    <property name="title" translatable="yes">Selected</property>
+                    <property name="expand">True</property>
+                    <property name="alignment">0.5</property>
+                    <child>
+                      <object class="GtkCellRendererToggle" id="selected_renderer"/>
+                      <attributes>
+                        <attribute name="active">3</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="resize">True</property>
+            <property name="shrink">False</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">True</property>
+        <property name="fill">True</property>
+        <property name="position">2</property>
+      </packing>
+    </child>
+    <child>
+      <!-- n-columns=2 n-rows=2 -->
+      <object class="GtkGrid">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="margin-start">15</property>
+        <property name="margin-end">15</property>
+        <property name="margin-top">5</property>
+        <property name="margin-bottom">5</property>
+        <property name="row-spacing">5</property>
+        <property name="column-spacing">5</property>
+        <property name="column-homogeneous">True</property>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">Download logos</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSwitch" id="download_logos_switch">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="halign">end</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">Service type</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkComboBoxText">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="active">1</property>
+            <property name="active-id">non-TS</property>
+            <items>
+              <item id="1" translatable="yes">DVB/TS</item>
+              <item id="4097" translatable="yes">non-TS</item>
+              <item id="5001" translatable="yes">none-REC1</item>
+              <item id="5002" translatable="yes">none-REC2</item>
+            </items>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">1</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">3</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkButtonBox" id="bouqets_split_box">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="tooltip-text" translatable="yes">Create bouquets</property>
+        <property name="halign">center</property>
+        <property name="margin-start">15</property>
+        <property name="margin-end">15</property>
+        <property name="homogeneous">True</property>
+        <property name="layout-style">expand</property>
+        <child>
+          <object class="GtkRadioButton" id="single_bq_button">
+            <property name="label" translatable="yes">Single bouquet</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="draw-indicator">False</property>
+            <property name="group">sub_bq_button</property>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkRadioButton" id="split_bq_button">
+            <property name="label" translatable="yes">Split by groups</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="draw-indicator">False</property>
+            <property name="group">single_bq_button</property>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkRadioButton" id="sub_bq_button">
+            <property name="label" translatable="yes">Create sub-bouquets</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="draw-indicator">False</property>
+            <property name="group">split_bq_button</property>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">4</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkButton">
+        <property name="label" translatable="yes">Import</property>
+        <property name="width-request">200</property>
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="receives-default">True</property>
+        <property name="halign">center</property>
+        <property name="border-width">24</property>
+        <property name="image">import_button_image</property>
+        <property name="always-show-image">True</property>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">5</property>
+      </packing>
+    </child>
+  </object>
+</interface>
