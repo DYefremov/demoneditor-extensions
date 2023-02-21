@@ -30,6 +30,8 @@ import re
 
 import gi
 
+from app.ui.main_helper import update_toggle_model, update_popup_filter_model
+
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GLib
 
@@ -55,19 +57,32 @@ class ImportDialog(Gtk.Window):
                          modal=True, **kwargs)
 
         self._app = app
+        self._groups = set()
 
         _base_path = os.path.dirname(__file__)
         builder = Gtk.Builder.new_from_file(f"{_base_path}{os.sep}dialog.ui")
+
         self.add(builder.get_object("main_box"))
         self._model = builder.get_object("model")
+        self._filter_model = builder.get_object("filter_model")
+        self._filter_model.set_visible_func(self.filter_function)
+        self._filter_group_model = builder.get_object("filter_group_list_store")
+        self._filter_entry = builder.get_object("filter_entry")
+        self._filter_entry.connect("search-changed", self.on_filter_changed)
+        renderer_toggle = builder.get_object("filter_group_renderer_toggle")
+        renderer_toggle.connect("toggled", self.on_group_toggled)
 
         self._chooser_button = builder.get_object("file_chooser_button")
         self._chooser_button.connect("file-set", self.on_file_set)
         self._input_text_view = builder.get_object("input_text_view")
         self._input_text_view.connect("paste-clipboard", self.on_paste_clipboard)
+        builder.get_object("selected_renderer").connect("toggled", self.on_selected_toggled)
+        builder.get_object("version_label").set_text(f"Ver: {Streamimport.VERSION}")
 
     def on_file_set(self, button):
         self._model.clear()
+        self._groups.clear()
+
         path = button.get_filename()
         if not os.path.isfile(path):
             return
@@ -109,9 +124,10 @@ class ImportDialog(Gtk.Window):
                 epg_src = params.get("x-tvg-url", params.get("url-tvg", None))
                 epg_src = epg_src.split(",") if epg_src else None
             elif line.startswith("#EXTINF"):
+                line, sep, name = line.rpartition(",")
                 params = dict(self.PARAMS.findall(line))
                 group = params.get("group-title", None)
-                name = params.get("tvg-name", None)
+                name = params.get("tvg-name", name)
                 logo = params.get("tvg-logo", None)
                 ch_id = params.get("tvg-id", None)
             elif line.startswith("#EXTGRP"):
@@ -125,7 +141,37 @@ class ImportDialog(Gtk.Window):
 
                 ch_id = ch_id.strip() if ch_id else ch_id
                 logo = logo.strip() if logo else logo
+                if group:
+                    self._groups.add(group)
                 yield self._model.append((None, name, group, True, ch_id, url, logo, None))
+
+        self.update_groups()
+        yield True
+
+    def on_selected_toggled(self, renderer, path):
+        self._model.set_value(self._model.get_iter(path), 3, not renderer.get_active())
+
+    def on_group_toggled(self, renderer, path):
+        update_toggle_model(self._filter_group_model, path, renderer)
+        self._groups.clear()
+        self._groups.update({r[0] for r in self._filter_group_model if r[1]})
+        self.on_filter_changed()
+
+    def update_groups(self):
+        update_popup_filter_model(self._filter_group_model, self._groups)
+        list(map(lambda g: self._filter_group_model.append((g, True)), sorted(self._groups, reverse=True)))
+
+    def on_filter_changed(self, entry=None):
+        self._filter_model.refilter()
+
+    def filter_function(self, model, itr, data):
+        if any((model is None, model == "None")):
+            return True
+
+        txt, grp = model[itr][1:3]
+        txt = txt.upper() if txt else ""
+
+        return self._filter_entry.get_text().upper() in txt and grp in self._groups
 
 
 if __name__ == "__main__":
