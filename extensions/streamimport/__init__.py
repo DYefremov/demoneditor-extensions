@@ -25,14 +25,19 @@
 # Author: Dmitriy Yefremov
 #
 
+
+from itertools import groupby
 import os
 import re
+from enum import IntEnum
 
-import gi
+from app.eparser import Service
+from app.eparser.ecommons import BqServiceType
+from app.eparser.iptv import MARKER_FORMAT, get_picon_id, get_fav_id
+from app.settings import SettingsType
+from app.ui.main_helper import update_toggle_model, update_popup_filter_model, get_base_itrs
+from app.ui.uicommons import IPTV_ICON, Column
 
-from app.ui.main_helper import update_toggle_model, update_popup_filter_model
-
-gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GLib
 
 from extensions import BaseExtension
@@ -42,27 +47,41 @@ class Streamimport(BaseExtension):
     LABEL = "Advanced streams import"
 
     def exec(self):
-        dialog = ImportDialog(self.app)
+        dialog = ImportDialog(self)
         dialog.show()
 
 
 class ImportDialog(Gtk.Window):
     PARAMS = re.compile(r'(\S+)="(.*?)"')
 
-    def __init__(self, app, **kwargs):
+    class Column(IntEnum):
+        LOGO = 0
+        NAME = 1
+        GROUP = 2
+        SELECTED = 3
+        ID = 4
+        URL = 5
+        LOGO_URL = 6
+        TOOLTIP = 7
+
+    def __init__(self, plugin, **kwargs):
         super().__init__(title=Streamimport.LABEL,
                          destroy_with_parent=True,
+                         window_position=Gtk.WindowPosition.CENTER_ON_PARENT,
+                         transient_for=plugin.app.app_window,
                          default_width=560,
                          icon_name="demon-editor",
                          modal=True, **kwargs)
 
-        self._app = app
+        self._plugin = plugin
+        self._app = plugin.app
         self._groups = set()
 
         _base_path = os.path.dirname(__file__)
         builder = Gtk.Builder.new_from_file(f"{_base_path}{os.sep}dialog.ui")
 
         self.add(builder.get_object("main_box"))
+        self._view = builder.get_object("view")
         self._model = builder.get_object("model")
         self._filter_model = builder.get_object("filter_model")
         self._filter_model.set_visible_func(self.filter_function)
@@ -78,6 +97,14 @@ class ImportDialog(Gtk.Window):
         self._input_text_view.connect("paste-clipboard", self.on_paste_clipboard)
         builder.get_object("selected_renderer").connect("toggled", self.on_selected_toggled)
         builder.get_object("version_label").set_text(f"Ver: {Streamimport.VERSION}")
+
+        self._service_type_box = builder.get_object("service_type_box")
+        self._single_bq_button = builder.get_object("single_bq_button")
+        self._split_bq_button = builder.get_object("split_bq_button")
+        self._sub_bq_button = builder.get_object("sub_bq_button")
+        builder.get_object("import_button").connect("clicked", self.on_import)
+        # Neutrino.
+        builder.get_object("options_grid").set_visible(self._app.is_enigma)
 
     def on_file_set(self, button):
         self._model.clear()
@@ -149,7 +176,9 @@ class ImportDialog(Gtk.Window):
         yield True
 
     def on_selected_toggled(self, renderer, path):
-        self._model.set_value(self._model.get_iter(path), 3, not renderer.get_active())
+        model = self._view.get_model()
+        itr = get_base_itrs((model.get_iter(path),), model).pop()
+        self._model.set_value(itr, self.Column.SELECTED, not renderer.get_active())
 
     def on_group_toggled(self, renderer, path):
         update_toggle_model(self._filter_group_model, path, renderer)
@@ -168,10 +197,97 @@ class ImportDialog(Gtk.Window):
         if any((model is None, model == "None")):
             return True
 
-        txt, grp = model[itr][1:3]
+        txt, grp = model[itr][self.Column.NAME], model[itr][self.Column.GROUP]
         txt = txt.upper() if txt else ""
 
         return self._filter_entry.get_text().upper() in txt and grp in self._groups
+
+    def on_import(self, button):
+        settings_type = self._app.app_settings.setting_type
+        service_rows = filter(lambda r: r[self.Column.SELECTED], self._view.get_model())
+
+        if settings_type is SettingsType.ENIGMA_2:
+            if not self._single_bq_button.get_active():
+                def grouper(row):
+                    return row[self.Column.GROUP]
+
+                service_rows = groupby(sorted(service_rows, key=grouper), key=grouper)
+
+        model = self._app.bouquets_view.get_model()
+
+        if settings_type is SettingsType.ENIGMA_2:
+            itr = model.get_iter_first()
+        else:
+            itr = model.get_iter(Gtk.TreePath.new_from_indices([len(model) - 1]))
+
+        if self._single_bq_button.get_active() or settings_type is SettingsType.NEUTRINO_MP:
+            self.append_bouquet("IPTV", model, itr, service_rows, settings_type)
+        elif self._split_bq_button.get_active():
+            for g, g_services in service_rows:
+                self.append_bouquet(g, model, itr, g_services, settings_type)
+
+    def append_bouquet(self, name, model, itr, service_rows, settings_type):
+        bqs = self._app.current_bouquets
+        cur_services = self._app.current_services
+        bq_type = model.get_value(itr, Column.BQ_TYPE)
+
+        bq_name = self.get_bouquet_name(bqs, name, bq_type)
+        services = self.get_group_services(service_rows, settings_type)
+        bq = (bq_name, None, None, bq_type)
+        model.append(itr, bq)
+        bqs[f"{bq_name}:{bq_type}"] = [s.fav_id for s in services]
+        cur_services.update({s.fav_id: s for s in services})
+
+    def get_group_services(self, rows, settings_type):
+        params = [0, 0, 0, 0]
+
+        aggr = [None] * 10
+        s_aggr = aggr[: -3]
+        m_name = BqServiceType.MARKER.name
+        st = BqServiceType.IPTV.name
+        p_id = "1_0_1_0_0_0_0_0_0_0.png"
+        picon = None
+        srv_type = None
+        if settings_type is SettingsType.ENIGMA_2:
+            srv_type = self._service_type_box.get_active_id()
+
+        grp_services = []
+        groups = set()
+        m_counter = 0
+        sid_counter = 0
+        for rs in rows:
+            if settings_type is SettingsType.ENIGMA_2:
+                grp = rs[self.Column.GROUP]
+                if grp and grp not in groups:
+                    groups.add(grp)
+                    m_counter += 1
+                    fav_id = MARKER_FORMAT.format(m_counter, grp, grp)
+                    grp_services.append(Service(None, None, None, grp, *aggr[0:3], m_name, *aggr, fav_id, None))
+            sid_counter += 1
+            name, url = rs[self.Column.NAME], rs[self.Column.URL]
+            fav_id = get_fav_id(url, name, settings_type, params, srv_type)
+            if settings_type is SettingsType.ENIGMA_2:
+                p_id = get_picon_id(params, srv_type)
+
+            if all((name, url, fav_id)):
+                srv = Service(None, None, IPTV_ICON, name, *aggr[0:3], st, picon, p_id, *s_aggr, url, fav_id, None)
+                grp_services.append(srv)
+            else:
+                self._plugin.log(f"Import error: name[{name}], url[{url}], fav id[{fav_id}]")
+
+        return grp_services
+
+    def get_bouquet_name(self, bouquets, base_name, bq_type):
+        count = 0
+        key = f"{base_name}:{bq_type}"
+        bq_name = base_name
+        #  Generating name of new bouquet.
+        while key in bouquets:
+            count += 1
+            bq_name = f"{base_name}{count}"
+            key = f"{bq_name}:{bq_type}"
+
+        return bq_name
 
 
 if __name__ == "__main__":
