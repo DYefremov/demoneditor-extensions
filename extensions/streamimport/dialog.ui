@@ -454,6 +454,7 @@ Author: Dmitriy Yefremov
         <child>
           <object class="GtkRadioButton" id="sub_bq_button">
             <property name="label" translatable="yes">Create sub-bouquets</property>
+            <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
             <property name="draw-indicator">False</property>

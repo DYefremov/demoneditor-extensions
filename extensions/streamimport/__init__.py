@@ -225,18 +225,23 @@ class ImportDialog(Gtk.Window):
         elif self._split_bq_button.get_active():
             for g, g_services in service_rows:
                 self.append_bouquet(g, model, itr, g_services, settings_type)
+        else:
+            itr = self.append_bouquet("IPTV", model, itr, (), settings_type)
+            for g, g_services in service_rows:
+                self.append_bouquet(g, model, itr, g_services, settings_type)
 
     def append_bouquet(self, name, model, itr, service_rows, settings_type):
+        """ Adds new bouquet and returns iter of appended row. """
         bqs = self._app.current_bouquets
         cur_services = self._app.current_services
         bq_type = model.get_value(itr, Column.BQ_TYPE)
 
         bq_name = self.get_bouquet_name(bqs, name, bq_type)
         services = self.get_group_services(service_rows, settings_type)
-        bq = (bq_name, None, None, bq_type)
-        model.append(itr, bq)
         bqs[f"{bq_name}:{bq_type}"] = [s.fav_id for s in services]
         cur_services.update({s.fav_id: s for s in services})
+        bq = (bq_name, None, None, bq_type)
+        return model.append(itr, bq)
 
     def get_group_services(self, rows, settings_type):
         params = [0, 0, 0, 0]
