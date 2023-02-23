@@ -94,7 +94,7 @@ class ImportDialog(Gtk.Window):
         self._chooser_button = builder.get_object("file_chooser_button")
         self._chooser_button.connect("file-set", self.on_file_set)
         self._input_text_view = builder.get_object("input_text_view")
-        self._input_text_view.connect("paste-clipboard", self.on_paste_clipboard)
+        self._input_text_view.get_buffer().connect("paste-done", self.on_paste_text)
         builder.get_object("selected_renderer").connect("toggled", self.on_selected_toggled)
         builder.get_object("version_label").set_text(f"Ver: {Streamimport.VERSION}")
 
@@ -106,9 +106,12 @@ class ImportDialog(Gtk.Window):
         # Neutrino.
         builder.get_object("options_grid").set_visible(self._app.is_enigma)
 
-    def on_file_set(self, button):
+    def clear_data(self):
         self._model.clear()
         self._groups.clear()
+
+    def on_file_set(self, button):
+        self.clear_data()
 
         path = button.get_filename()
         if not os.path.isfile(path):
@@ -117,8 +120,13 @@ class ImportDialog(Gtk.Window):
         gen = self.update_from_file(path)
         GLib.idle_add(lambda: next(gen, False), priority=GLib.PRIORITY_LOW)
 
-    def on_paste_clipboard(self, view: Gtk.TextView):
-        pass
+    def on_paste_text(self, buffer: Gtk.TextBuffer, clip: Gtk.Clipboard):
+        self.clear_data()
+
+        text = buffer.get_text(buffer.get_start_iter(), buffer.get_end_iter(), False)
+
+        gen = self.process_data(text.splitlines())
+        GLib.idle_add(lambda: next(gen, False), priority=GLib.PRIORITY_LOW)
 
     def update_from_file(self, path):
         self._chooser_button.set_sensitive(False)

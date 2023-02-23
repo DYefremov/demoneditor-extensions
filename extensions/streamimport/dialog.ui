@@ -133,6 +133,7 @@ Author: Dmitriy Yefremov
   <object class="GtkTreeModelSort" id="sort_model">
     <property name="model">filter_model</property>
   </object>
+  <object class="GtkTextBuffer" id="text_buffer"/>
   <object class="GtkBox" id="main_box">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -149,7 +150,6 @@ Author: Dmitriy Yefremov
             <property name="can-focus">False</property>
             <property name="tooltip-text" translatable="yes">Filter</property>
             <property name="halign">center</property>
-            <property name="margin-start">5</property>
             <property name="margin-end">5</property>
             <property name="margin-top">5</property>
             <property name="margin-bottom">5</property>
@@ -189,6 +189,7 @@ Author: Dmitriy Yefremov
                 <property name="fill">True</property>
                 <property name="pack-type">end</property>
                 <property name="position">1</property>
+                <property name="secondary">True</property>
                 <property name="non-homogeneous">True</property>
               </packing>
             </child>
@@ -202,6 +203,7 @@ Author: Dmitriy Yefremov
         <child>
           <object class="GtkFileChooserButton" id="file_chooser_button">
             <property name="visible">True</property>
+            <property name="sensitive" bind-source="text_input_button" bind-property="active" bind-flags="invert-boolean">True</property>
             <property name="can-focus">False</property>
             <property name="tooltip-text" translatable="yes">Import m3u file</property>
             <property name="margin-start">5</property>
@@ -211,12 +213,33 @@ Author: Dmitriy Yefremov
             <property name="filter">file_filter</property>
             <property name="local-only">False</property>
             <property name="title" translatable="yes">Select *.m3u*</property>
-            <property name="width-chars">12</property>
           </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkToggleButton" id="text_input_button">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="tooltip-text" translatable="yes">Import from clipboard</property>
+            <property name="margin-top">5</property>
+            <property name="margin-bottom">5</property>
+            <child>
+              <object class="GtkImage" id="text_input_button_image">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="icon-name">edit-paste-symbolic</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
           </packing>
         </child>
         <style>
@@ -240,14 +263,21 @@ Author: Dmitriy Yefremov
         <property name="wide-handle">True</property>
         <child>
           <object class="GtkScrolledWindow" id="input_text_view_scrolled">
+            <property name="visible" bind-source="text_input_button" bind-property="active">False</property>
             <property name="can-focus">True</property>
             <property name="shadow-type">in</property>
             <child>
               <object class="GtkTextView" id="input_text_view">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
+                <property name="tooltip-text" translatable="yes">Insert part or full playlist content!</property>
                 <property name="wrap-mode">word</property>
+                <property name="left-margin">5</property>
+                <property name="right-margin">5</property>
+                <property name="top-margin">5</property>
+                <property name="bottom-margin">5</property>
                 <property name="indent">5</property>
+                <property name="buffer">text_buffer</property>
               </object>
             </child>
           </object>
@@ -337,7 +367,7 @@ Author: Dmitriy Yefremov
       <packing>
         <property name="expand">True</property>
         <property name="fill">True</property>
-        <property name="position">1</property>
+        <property name="position">2</property>
       </packing>
     </child>
     <child>
@@ -408,7 +438,7 @@ Author: Dmitriy Yefremov
       <packing>
         <property name="expand">False</property>
         <property name="fill">True</property>
-        <property name="position">2</property>
+        <property name="position">3</property>
       </packing>
     </child>
     <child>
@@ -470,7 +500,7 @@ Author: Dmitriy Yefremov
       <packing>
         <property name="expand">False</property>
         <property name="fill">True</property>
-        <property name="position">3</property>
+        <property name="position">4</property>
       </packing>
     </child>
     <child>
@@ -488,7 +518,7 @@ Author: Dmitriy Yefremov
       <packing>
         <property name="expand">False</property>
         <property name="fill">True</property>
-        <property name="position">4</property>
+        <property name="position">5</property>
       </packing>
     </child>
     <child>
@@ -507,7 +537,7 @@ Author: Dmitriy Yefremov
       <packing>
         <property name="expand">False</property>
         <property name="fill">True</property>
-        <property name="position">5</property>
+        <property name="position">6</property>
       </packing>
     </child>
   </object>
