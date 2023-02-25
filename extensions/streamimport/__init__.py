@@ -37,7 +37,7 @@ from app.eparser import Service
 from app.eparser.ecommons import BqServiceType
 from app.eparser.iptv import MARKER_FORMAT, get_picon_id, get_fav_id
 from app.settings import SettingsType
-from app.ui.main_helper import update_toggle_model, update_popup_filter_model, get_base_itrs
+from app.ui.main_helper import update_toggle_model, update_popup_filter_model, get_base_itrs, scroll_to
 from app.ui.uicommons import IPTV_ICON, Column
 from extensions import BaseExtension
 
@@ -238,15 +238,22 @@ class ImportDialog(Gtk.Window):
         else:
             itr = model.get_iter(Gtk.TreePath.new_from_indices([len(model) - 1]))
 
+        root_path = model.get_path(itr)
+        bq_itr = itr
+
         if self._single_bq_button.get_active() or settings_type is SettingsType.NEUTRINO_MP:
-            self.append_bouquet("IPTV", model, itr, service_rows, settings_type)
+            bq_itr = self.append_bouquet("IPTV", model, itr, service_rows, settings_type)
         elif self._split_bq_button.get_active():
             for g, g_services in service_rows:
-                self.append_bouquet(g, model, itr, g_services, settings_type)
+                bq_itr = self.append_bouquet(g, model, itr, g_services, settings_type)
         else:
             itr = self.append_bouquet("IPTV", model, itr, (), settings_type)
+            bq_itr = itr
             for g, g_services in service_rows:
                 self.append_bouquet(g, model, itr, g_services, settings_type)
+
+        scroll_to(model.get_path(bq_itr), self._app.bouquets_view, [root_path])
+        self._app.show_info_message("Done!")
 
     def append_bouquet(self, name, model, itr, service_rows, settings_type):
         """ Adds new bouquet and returns iter of appended row. """
