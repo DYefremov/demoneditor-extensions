@@ -26,10 +26,12 @@
 #
 
 
-from itertools import groupby
 import os
 import re
 from enum import IntEnum
+from itertools import groupby
+
+from gi.repository import Gtk, GLib
 
 from app.eparser import Service
 from app.eparser.ecommons import BqServiceType
@@ -37,18 +39,24 @@ from app.eparser.iptv import MARKER_FORMAT, get_picon_id, get_fav_id
 from app.settings import SettingsType
 from app.ui.main_helper import update_toggle_model, update_popup_filter_model, get_base_itrs
 from app.ui.uicommons import IPTV_ICON, Column
-
-from gi.repository import Gtk, GLib
-
 from extensions import BaseExtension
 
 
 class Streamimport(BaseExtension):
     LABEL = "Advanced streams import"
 
+    def __init__(self, app):
+        super().__init__(app)
+        self._dialog = ImportDialog(self)
+        self._dialog.connect("delete-event", self.on_destroy)
+
     def exec(self):
-        dialog = ImportDialog(self)
-        dialog.show()
+        self._dialog.show()
+
+    def on_destroy(self, window, event):
+        """ Used to prevent window deletion and destroying. """
+        window.hide()
+        return True
 
 
 class ImportDialog(Gtk.Window):
@@ -71,7 +79,7 @@ class ImportDialog(Gtk.Window):
                          transient_for=plugin.app.app_window,
                          default_width=560,
                          icon_name="demon-editor",
-                         modal=True, **kwargs)
+                         **kwargs)
 
         self._plugin = plugin
         self._app = plugin.app
@@ -103,12 +111,14 @@ class ImportDialog(Gtk.Window):
         self._split_bq_button = builder.get_object("split_bq_button")
         self._sub_bq_button = builder.get_object("sub_bq_button")
         builder.get_object("import_button").connect("clicked", self.on_import)
+        self.connect("hide", self.clear_data)
         # Neutrino.
         builder.get_object("options_grid").set_visible(self._app.is_enigma)
 
-    def clear_data(self):
+    def clear_data(self, widget=None):
         self._model.clear()
         self._groups.clear()
+        self._filter_entry.set_text("")
 
     def on_file_set(self, button):
         self.clear_data()
