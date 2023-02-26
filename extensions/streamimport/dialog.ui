@@ -133,6 +133,33 @@ Author: Dmitriy Yefremov
   <object class="GtkTreeModelSort" id="sort_model">
     <property name="model">filter_model</property>
   </object>
+  <object class="GtkImage" id="remove_selection_image">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">edit-undo</property>
+  </object>
+  <object class="GtkMenu" id="popup_menu">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <child>
+      <object class="GtkImageMenuItem" id="select_all_item">
+        <property name="label">gtk-select-all</property>
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="use-underline">True</property>
+        <property name="use-stock">True</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkImageMenuItem" id="remove_selection_item">
+        <property name="label" translatable="yes">Remove selection</property>
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="image">remove_selection_image</property>
+        <property name="use-stock">False</property>
+      </object>
+    </child>
+  </object>
   <object class="GtkTextBuffer" id="text_buffer"/>
   <object class="GtkBox" id="main_box">
     <property name="visible">True</property>

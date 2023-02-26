@@ -37,7 +37,7 @@ from app.eparser import Service
 from app.eparser.ecommons import BqServiceType
 from app.eparser.iptv import MARKER_FORMAT, get_picon_id, get_fav_id
 from app.settings import SettingsType
-from app.ui.main_helper import update_toggle_model, update_popup_filter_model, get_base_itrs, scroll_to
+from app.ui.main_helper import update_toggle_model, update_popup_filter_model, get_base_itrs, scroll_to, on_popup_menu
 from app.ui.uicommons import IPTV_ICON, Column
 from extensions import BaseExtension
 
@@ -90,6 +90,14 @@ class ImportDialog(Gtk.Window):
 
         self.add(builder.get_object("main_box"))
         self._view = builder.get_object("view")
+        self._popup_menu = builder.get_object("popup_menu")
+        self._select_all_item = builder.get_object("select_all_item")
+        self._remove_selection_item = builder.get_object("remove_selection_item")
+        self._view.connect("select-all", lambda v: self.update_selection(True))
+        self._view.connect_data("button-press-event", self.on_button_press)
+        self._select_all_item.connect("activate", lambda i: self.update_selection(True))
+        self._remove_selection_item.connect("activate", lambda i: self.update_selection(False))
+
         self._model = builder.get_object("model")
         self._filter_model = builder.get_object("filter_model")
         self._filter_model.set_visible_func(self.filter_function)
@@ -193,6 +201,17 @@ class ImportDialog(Gtk.Window):
         self.update_groups()
         yield True
 
+    def on_button_press(self, view, event):
+        empty = bool(len(view.get_model()))
+        self._select_all_item.set_sensitive(empty)
+        self._remove_selection_item.set_sensitive(empty)
+        on_popup_menu(self._popup_menu, event)
+
+    def update_selection(self, select):
+        model = self._view.get_model()
+        iters = get_base_itrs((r.iter for r in model), model)
+        [self._model.set_value(itr, self.Column.SELECTED, select) for itr in iters]
+
     def on_selected_toggled(self, renderer, path):
         model = self._view.get_model()
         itr = get_base_itrs((model.get_iter(path),), model).pop()
@@ -294,6 +313,7 @@ class ImportDialog(Gtk.Window):
                     fav_id = MARKER_FORMAT.format(m_counter, grp, grp)
                     grp_services.append(Service(None, None, None, grp, *aggr[0:3], m_name, *aggr, fav_id, None))
             sid_counter += 1
+            params[0] = sid_counter
             name, url = rs[self.Column.NAME], rs[self.Column.URL]
             fav_id = get_fav_id(url, name, settings_type, params, srv_type)
             if settings_type is SettingsType.ENIGMA_2:
