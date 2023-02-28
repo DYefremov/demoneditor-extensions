@@ -1,0 +1,1 @@
+### Extension for searching and removing IPTV channels with duplicate URLs.
