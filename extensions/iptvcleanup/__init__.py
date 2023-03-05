@@ -71,18 +71,18 @@ class Iptvcleanup(BaseExtension):
             self.app.show_info_message("No selected item!")
         else:
             bqs = self.app.current_bouquets
-            to_remove = defaultdict(list)
+            to_remove = defaultdict(set)
 
             for p in paths:
                 bq_id = f"{model[p][Column.BQ_NAME]}:{model[p][Column.BQ_TYPE]}"
                 bq = bqs.get(bq_id, None)
                 if bq:
                     exist = set()
-                    for s in bq:
+                    for i, s in enumerate(bq):
                         res = get_iptv_data(s)
                         if all(res):
                             if res[-1] in exist:
-                                to_remove[bq_id].append(s)
+                                to_remove[bq_id].add(i)
                             else:
                                 exist.add(res[-1])
 
@@ -90,24 +90,18 @@ class Iptvcleanup(BaseExtension):
             if dialog.run() == Gtk.ResponseType.OK:
                 bq_selected = self.app.check_bouquet_selection()
                 count = 0
-                for b, services in to_remove.items():
-                    services = set(services)
+                for b, indexes in to_remove.items():
                     if b == bq_selected:
                         # Processing selected bouquet list if it is selected for cleaning.
                         model = self.app.fav_view.get_model()
-                        exist = set()
-                        to_remove = []
-                        for r in filter(lambda row: row[Column.FAV_ID] in services, model):
-                            to_remove.append(r.iter) if r[Column.FAV_ID] in exist else exist.add(r[Column.FAV_ID])
+                        to_remove = [row.iter for i, row in enumerate(model) if i in indexes]
                         gen = self.app.remove_favs(to_remove, model)
                         GLib.idle_add(lambda: next(gen, False))
                         count += len(to_remove)
                     else:
                         bq = bqs.get(b)
                         bq_size = len(bq)
-                        exist, to_remove = set(), []
-                        [to_remove.append(i) if s in exist else exist.add(s) for i, s in enumerate(bq)]
-                        [bq.pop(i) for i in reversed(to_remove)]
+                        [bq.pop(i) for i in sorted(indexes, reverse=True)]
                         count += bq_size - len(bq)
 
                 self.app.show_info_message(f"{get_message('Done!')} {get_message('Removed')}: {count}")
