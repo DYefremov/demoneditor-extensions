@@ -86,7 +86,8 @@ class Iptvcleanup(BaseExtension):
                             else:
                                 exist.add(res[-1])
 
-            dialog = self.CleanupDialog(to_remove)
+            dialog = self.CleanupDialog(to_remove, transient_for=self.app.app_window)
+
             if dialog.run() == Gtk.ResponseType.OK:
                 bq_selected = self.app.check_bouquet_selection()
                 count = 0
