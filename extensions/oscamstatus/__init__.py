@@ -37,8 +37,11 @@ from gi.repository import GLib, Gtk, GObject
 from extensions import BaseExtension
 
 
-class OSCRequest(str, Enum):
+class OSCRequest(Enum):
     READERS = "part=readerlist"
+
+    def __str__(self):
+        return self.value
 
 
 class Oscamstatus(BaseExtension):
@@ -118,13 +121,13 @@ class Oscamstatus(BaseExtension):
     def refresh_data(self):
         data = None
         try:
-            with urlopen(Request(self._url, data=None), timeout=2) as f:
-                if f.status == 200:
-                    data = json.load(f)
+            with urlopen(Request(self._url, data=None), timeout=2) as resp:
+                if resp.status == 200:
+                    data = json.load(resp)
                     self.log("Update state")
                 else:
-                    self.log(f"Error: {f.status}")
-        except OSError as e:
+                    self.log(f"Error: {resp.status}")
+        except (OSError, ValueError) as e:
             self.log(f"Error: {e}")
 
         GLib.idle_add(self._readers_view.emit, "data-changed", data)
