@@ -48,15 +48,9 @@ class Streamimport(BaseExtension):
     def __init__(self, app):
         super().__init__(app)
         self._dialog = ImportDialog(self)
-        self._dialog.connect("delete-event", self.on_destroy)
 
     def exec(self):
         self._dialog.show()
-
-    def on_destroy(self, window, event):
-        """ Used to prevent window deletion and destroying. """
-        window.hide()
-        return True
 
 
 class ImportDialog(Gtk.Window):
@@ -120,12 +114,19 @@ class ImportDialog(Gtk.Window):
         self._sub_bq_button = builder.get_object("sub_bq_button")
         builder.get_object("import_button").connect("clicked", self.on_import)
         self.connect("hide", self.clear_data)
+        self.connect("delete-event", self.on_destroy)
         # Neutrino.
         builder.get_object("options_grid").set_visible(self._app.is_enigma)
+
+    def on_destroy(self, window, event):
+        """ Used to prevent window deletion and destroying. """
+        window.hide()
+        return True
 
     def clear_data(self, widget=None):
         self._model.clear()
         self._groups.clear()
+        self.update_groups()
         self._filter_entry.set_text("")
 
     def on_file_set(self, button):
@@ -138,7 +139,7 @@ class ImportDialog(Gtk.Window):
         gen = self.update_from_file(path)
         GLib.idle_add(lambda: next(gen, False), priority=GLib.PRIORITY_LOW)
 
-    def on_paste_text(self, buffer: Gtk.TextBuffer, clip: Gtk.Clipboard):
+    def on_paste_text(self, buffer, clip):
         self.clear_data()
 
         text = buffer.get_text(buffer.get_start_iter(), buffer.get_end_iter(), False)
