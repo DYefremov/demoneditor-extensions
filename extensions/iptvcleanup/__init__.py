@@ -30,7 +30,6 @@ from collections import defaultdict
 
 from gi.repository import Gtk, GLib
 
-from app.ui.dialogs import translate
 from app.ui.main_helper import get_iptv_data
 from app.ui.uicommons import Column
 from extensions import BaseExtension
@@ -53,7 +52,7 @@ class Iptvcleanup(BaseExtension):
                 count = sum((len(x) for x in data.values()))
                 self.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_DELETE, Gtk.ResponseType.OK)
 
-            label.set_text(f"{translate('Found')}: {count}")
+            label.set_text(f"Found: {count}")
             area.pack_start(label, True, True, 0)
             self.show_all()
 
@@ -105,7 +104,7 @@ class Iptvcleanup(BaseExtension):
                         [bq.pop(i) for i in sorted(indexes, reverse=True)]
                         count += bq_size - len(bq)
 
-                self.app.show_info_message(f"{translate('Done!')} {translate('Removed')}: {count}")
+                self.app.show_info_message(f"Done! Removed: {count}")
 
             dialog.destroy()
 
