@@ -258,6 +258,12 @@ class ImportDialog(Gtk.Window):
         else:
             itr = model.get_iter(Gtk.TreePath.new_from_indices([len(model) - 1]))
 
+        if not itr:
+            msg = "Error. Load your data first!"
+            self._plugin.log(msg)
+            self._app.show_error_message(msg)
+            return
+
         root_path = model.get_path(itr)
         bq_itr = itr
 
