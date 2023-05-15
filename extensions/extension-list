@@ -1,0 +1,26 @@
+{
+  "iptvcleanup": {
+    "label": "IPTV bouquets cleanup",
+    "description": "Extension for searching and removing IPTV channels with duplicate URLs.",
+    "version": "1.0",
+    "embedded": false,
+    "switchable": false,
+    "ref": "iptvcleanup?ref=main"
+  },
+  "oscamstatus ": {
+    "label": "OSCam status",
+    "description": "A simple extension to display OSCam status.",
+    "version": "1.0",
+    "embedded": false,
+    "switchable": false,
+    "ref": "oscamstatus?ref=main"
+  },
+  "streamimport": {
+    "label": "Advanced streams import",
+    "description": "Allows you to import IPTV streams from various sources.",
+    "version": "1.0",
+    "embedded": false,
+    "switchable": false,
+    "ref": "streamimport?ref=main"
+  }
+}
