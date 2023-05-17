@@ -7,7 +7,7 @@
     "switchable": false,
     "ref": "iptvcleanup?ref=main"
   },
-  "oscamstatus ": {
+  "oscamstatus": {
     "label": "OSCam status",
     "description": "A simple extension to display OSCam status.",
     "version": "1.0",
