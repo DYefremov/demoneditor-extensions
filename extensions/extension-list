@@ -1,4 +1,12 @@
 {
+  "filterhighlight": {
+    "label": "Filter highlight",
+    "description": "Marks (highlights) filtered text.",
+    "version": "1.0",
+    "embedded": true,
+    "switchable": false,
+    "ref": "filterhighlight?ref=main"
+  },
   "iptvcleanup": {
     "label": "IPTV bouquets cleanup",
     "description": "Extension for searching and removing IPTV channels with duplicate URLs.",
