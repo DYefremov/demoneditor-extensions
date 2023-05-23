@@ -45,6 +45,7 @@ class Filterhighlight(BaseExtension):
 
         app._stack_services_frame.connect("realize", self.on_bq_tab_realize)
         app._stack_epg_box.connect("realize", self.on_epg_tab_realize)
+        app._stack_recordings_box.connect("realize", self.on_recordings_tab_realize)
 
     def on_bq_tab_realize(self, widget):
         # Sat
@@ -72,10 +73,25 @@ class Filterhighlight(BaseExtension):
         self.init_data_func(view, 1, entry, 1, 0)  # Title
         self.init_data_func(view, 5, entry, 5, 0)  # Description
 
-    def init_data_func(self, view, column, entry, m_index, cel):
+    def on_recordings_tab_realize(self, widget):
+        from app.ui.recordings import RecordingsTool
+
+        children = widget.get_children()
+        if not children or not isinstance(children[0], RecordingsTool):
+            self.log("Initialization error [Recordings tab].")
+            return
+
+        tool = children[0]
+        view = tool._rec_view
+        entry = tool._filter_entry
+        self.init_data_func(view, 0, entry, 1, 1)  # Service
+        self.init_data_func(view, 1, entry, 2, 0)  # Title
+        self.init_data_func(view, 5, entry, 6, 0)  # Description
+
+    def init_data_func(self, view, column, entry, model_column, cel):
         v_column = view.get_column(column)
         v_column.set_cell_data_func(v_column.get_cells()[cel], lambda c, r, m, i, d: self.data_func(
-            m_index, r, m, i, entry.get_text().upper()))
+            model_column, r, m, i, entry.get_text().upper()))
 
     def data_func(self, column, renderer, model, itr, f_txt):
         txt = model[itr][column]
