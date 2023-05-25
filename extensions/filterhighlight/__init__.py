@@ -98,7 +98,7 @@ class Filterhighlight(BaseExtension):
         if f_txt and f_txt in txt.upper():
             murk = re.sub(re.escape(f_txt),
                           lambda m:
-                          f'<span foreground="{self._color}"><b>{m.group()}</b></span>',
+                          f'<span foreground="{self._color}"><b><u>{m.group()}</u></b></span>',
                           txt, flags=re.I)
             renderer.set_property("markup", murk)
 
