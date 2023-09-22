@@ -195,8 +195,9 @@ class ImportDialog(Gtk.Window):
 
                 ch_id = ch_id.strip() if ch_id else ch_id
                 logo = logo.strip() if logo else logo
-                if group:
-                    self._groups.add(group)
+                group = group or "No Group"
+                self._groups.add(group)
+
                 yield self._model.append((None, name, group, True, ch_id, url, logo, None))
 
         self.update_groups()
