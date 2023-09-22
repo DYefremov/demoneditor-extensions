@@ -44,6 +44,7 @@ from extensions import BaseExtension
 
 class Streamimport(BaseExtension):
     LABEL = "Advanced streams import"
+    VERSION = "1.1"
 
     def __init__(self, app):
         super().__init__(app)
