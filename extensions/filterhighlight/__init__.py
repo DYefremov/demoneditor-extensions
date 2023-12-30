@@ -95,6 +95,9 @@ class Filterhighlight(BaseExtension):
 
     def data_func(self, column, renderer, model, itr, f_txt):
         txt = model[itr][column]
+        if not txt:
+            return True
+
         if f_txt and f_txt in txt.upper():
             murk = re.sub(re.escape(f_txt),
                           lambda m:
