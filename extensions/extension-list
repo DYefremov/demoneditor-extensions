@@ -2,7 +2,7 @@
   "filterhighlight": {
     "label": "Filter highlight",
     "description": "Marks (highlights) filtered text.",
-    "version": "1.0",
+    "version": "1.1",
     "embedded": true,
     "switchable": false,
     "ref": "filterhighlight?ref=main"

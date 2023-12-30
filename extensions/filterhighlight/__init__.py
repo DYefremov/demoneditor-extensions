@@ -36,6 +36,7 @@ from extensions import BaseExtension
 class Filterhighlight(BaseExtension):
     LABEL = "Filter highlight"
     EMBEDDED = True
+    VERSION = "1.1"
 
     def __init__(self, app):
         super().__init__(app)
