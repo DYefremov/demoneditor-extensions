@@ -57,7 +57,9 @@ class Epgexport(BaseExtension):
 
         # Checking for the required version.
         if not hasattr(app, "DATA_SEND_PAGES"):
-            self.log("Init error. Minimum required app version >= 3.9.0.")
+            msg = "Init error. Minimum required app version >= 3.9.0."
+            self.log(msg)
+            self.app.show_error_message(f"[{self.__class__.__name__}] {msg}")
             return
 
         app.DATA_SEND_PAGES.add(Page.EPG)
