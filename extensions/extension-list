@@ -1,4 +1,12 @@
 {
+  "epgexport": {
+    "label": "EPG Export",
+    "description": "Allows you to export XMLTV data as an epg.dat file from the EPG tab to the receiver.",
+    "version": "1.0",
+    "embedded": true,
+    "switchable": false,
+    "ref": "epgexport?ref=main"
+  },
   "filterhighlight": {
     "label": "Filter highlight",
     "description": "Marks (highlights) filtered text.",
