@@ -58,6 +58,7 @@ class Epgexport(BaseExtension):
         # Checking for the required version.
         if not hasattr(app, "DATA_SEND_PAGES"):
             self.log("Init error. Minimum required app version >= 3.9.0.")
+            return
 
         app.DATA_SEND_PAGES.add(Page.EPG)
         app._stack_epg_box.connect("realize", self.on_epg_tab_realize)
@@ -88,7 +89,11 @@ class Epgexport(BaseExtension):
             self.app.show_error_message("Load XML TV data first!")
 
     def send_data(self):
-        msg = f"EXPERIMENTAL!\n\nAre you sure?"
+        msg = ("\n\t This operation will overwrite\n"
+               "the current EPG cache file of your receiver!\n\n\t\t\tAre you sure?\n\n\n"
+               "\t\t\t\tATTENTION\n"
+               "After the operation is completed, load the cache data\n"
+               "         manually using the receiver menu!")
         if show_dialog(DialogType.QUESTION, self.app.app_window, msg) != Gtk.ResponseType.OK:
             return
 
@@ -113,7 +118,8 @@ class Epgexport(BaseExtension):
         self.process_dat(path, services)
 
     def process_dat(self, path, services):
-        self.log("Creating epg.dat file...")
+        msg = f"Creating '{self._f_name}' file..."
+        self.log(msg)
         writer = EpgWriter(f"{path}{self._f_name}", services, self.log)
 
         def process():
@@ -121,7 +127,7 @@ class Epgexport(BaseExtension):
             if self._send_on_done:
                 self.send_dat(path)
 
-        task = BGTaskWidget(self.app, "Creating epg.dat file...", process, )
+        task = BGTaskWidget(self.app, msg, process, )
         self.app.emit("add-background-task", task)
 
     def send_dat(self, path):
@@ -129,6 +135,7 @@ class Epgexport(BaseExtension):
         with UtfFTP(host=settings.host, user=settings.user, passwd=settings.password) as ftp:
             ftp.encoding = "utf-8"
             try:
+                self.log(f"Current dir for '{self._f_name}': {settings.epg_dat_path}")
                 ftp.cwd(settings.epg_dat_path)
             except Exception as e:
                 self.log(e)
@@ -258,10 +265,9 @@ class EpgWriter:
         def_ref_data = ("0", "0", "0")
 
         with BytesIO() as tf:
-            for service, ev in self._services:
-                events = [self.get_event(d) for d in (e.event_data for e in ev)]
+            for srv, ev in self._services:
                 # sid, nid, tid.
-                sd = service.fav_id.split(":")
+                sd = srv.fav_id.split(":")
                 if len(sd) == 4:
                     sid, nid, tid, _ = sd
                 else:
@@ -273,7 +279,14 @@ class EpgWriter:
                             default_iptv_ref_detected = True
                         continue
 
-                tf.write(self.s_IIII.pack(int(sid, 16), int(nid, 16), int(tid, 16), len(events)))
+                try:
+                    sid, nid, tid = int(sid, 16), int(nid, 16), int(tid, 16)
+                except ValueError as e:
+                    self.log(f"Getting service [{srv.service}] data error: {e}")
+                    continue
+
+                events = [self.get_event(d) for d in (e.event_data for e in ev)]
+                tf.write(self.s_IIII.pack(sid, nid, tid, len(events)))
                 self.header1_srv_count += 1
 
                 s_bb = self.s_BB
@@ -307,7 +320,7 @@ class EpgWriter:
                     tf.write(s_bbb.pack(0x01, 0x00, 0x0a + event_header_size))
                     # Time.
                     event_time_hms = datetime.utcfromtimestamp(event[0])
-                    event_length_hms = datetime.utcfromtimestamp(event[0] - event[1])
+                    event_length_hms = datetime.utcfromtimestamp(event[1])
                     dvb_date = event_time_hms.toordinal() - self.EPG_PROLEPTIC_ZERO_DAY
                     # EVENT DATA
                     epg_event_data_id += 1
