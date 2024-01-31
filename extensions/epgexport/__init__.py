@@ -37,6 +37,7 @@ from gi.repository import GLib
 
 from app.connections import UtfFTP
 from app.ui.dialogs import show_dialog, DialogType
+from app.ui.epg.epg import TabEpgCache
 from app.ui.tasks import BGTaskWidget
 from app.ui.uicommons import Page, Column, Gtk
 from extensions import BaseExtension
@@ -76,10 +77,11 @@ class Epgexport(BaseExtension):
 
         tool = children[0]
         self._xmltv_button = tool._src_xmltv_button
-        tool.connect("epg-cache-initialized", self.on_cache_init)
+        self.app.connect("epg-cache-initialized", self.on_cache_init)
 
     def on_cache_init(self, tool, cache):
-        self._cache = cache
+        if isinstance(cache, TabEpgCache):
+            self._cache = cache
 
     def on_data_send(self, app, page):
         if page is not Page.EPG:
