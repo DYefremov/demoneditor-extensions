@@ -37,7 +37,6 @@ from gi.repository import GLib
 
 from app.connections import UtfFTP
 from app.ui.dialogs import show_dialog, DialogType
-from app.ui.epg.epg import TabEpgCache
 from app.ui.tasks import BGTaskWidget
 from app.ui.uicommons import Page, Column, Gtk
 from extensions import BaseExtension
@@ -80,6 +79,8 @@ class Epgexport(BaseExtension):
         self.app.connect("epg-cache-initialized", self.on_cache_init)
 
     def on_cache_init(self, tool, cache):
+        from app.ui.epg.epg import TabEpgCache
+
         if isinstance(cache, TabEpgCache):
             self._cache = cache
 
