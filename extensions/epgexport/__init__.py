@@ -258,9 +258,14 @@ class EpgWriter:
         """
         res = []
         b_desc = desc.encode(encoding="utf-8", errors="ignore")
+        # Maximum number of data chunks. Used for limit the description size.
+        max_count = 15
         desc_count = (len(b_desc) + 244) // 245
+        if desc_count > max_count:
+            desc_count = max_count
+
         for i in range(desc_count):
-            ssub = b_desc[i * 245:i * 245 + 245]
+            ssub = b_desc[i * 245:i * 245 + 245] if i < max_count else b"..."
             b_data = self.s_B3sBBB.pack((i << 4) + (desc_count - 1), b"eng", 0x00, int(len(ssub) + 1), 0x15) + ssub
             res.append((self.get_crc32(b_data, 0x4e), b_data))
         return res
