@@ -94,6 +94,11 @@ class Epgexport(BaseExtension):
             self.app.show_error_message("Load XML TV data first!")
 
     def send_data(self):
+        if not self._cache:
+            self.app.show_error_message("Error. EPG cache is not initialized!")
+            self.log("EPG cache is not initialized!")
+            return
+
         msg = ("\n\t This operation will overwrite\n"
                "the current EPG cache file of your receiver!\n\n\t\t\tAre you sure?\n\n\n"
                "\t\t\t\tATTENTION\n"
