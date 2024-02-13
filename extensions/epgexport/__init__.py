@@ -77,6 +77,7 @@ class Epgexport(BaseExtension):
         tool = children[0]
         self._xmltv_button = tool._src_xmltv_button
         self.app.connect("epg-cache-initialized", self.on_cache_init)
+        self.app.connect("epg-cache-updated", self.on_cache_init)
 
     def on_cache_init(self, tool, cache):
         from app.ui.epg.epg import TabEpgCache
