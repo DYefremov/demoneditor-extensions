@@ -7,6 +7,14 @@
     "switchable": false,
     "ref": "epgexport?ref=main"
   },
+  "favautomarker": {
+    "label": "Mark not in bouquets",
+    "description": "Automatically marks in the main list services that are not presented in bouquets.",
+    "version": "1.0",
+    "embedded": true,
+    "switchable": false,
+    "ref": "favautomarker?ref=main"
+  },
   "filterhighlight": {
     "label": "Filter highlight",
     "description": "Marks (highlights) filtered text.",
