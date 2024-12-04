@@ -2,7 +2,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2023 Dmitriy Yefremov
+# Copyright (c) 2023-2024 Dmitriy Yefremov
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 
 from collections import defaultdict
 
-from gi.repository import Gtk, GLib
+from gi.repository import Gtk, Gdk, GLib
 
 from app.ui.main_helper import get_iptv_data
 from app.ui.uicommons import Column
@@ -37,6 +37,7 @@ from extensions import BaseExtension
 
 class Iptvcleanup(BaseExtension):
     LABEL = "IPTV bouquets cleanup"
+    VERSION = "1.1"
 
     class CleanupDialog(Gtk.Dialog):
         def __init__(self, data: dict, **kwargs):
@@ -69,6 +70,7 @@ class Iptvcleanup(BaseExtension):
         if not paths:
             self.app.show_info_message("No selected item!")
         else:
+            bq_selected = self.app.check_bouquet_selection()
             bqs = self.app.current_bouquets
             to_remove = defaultdict(set)
 
@@ -85,10 +87,19 @@ class Iptvcleanup(BaseExtension):
                             else:
                                 exist.add(res[-1])
 
+                    if bq_id == bq_selected:
+                        # Mark duplicates for the current bouquet
+                        c_ids = to_remove.get(bq_id, None)
+                        if c_ids:
+                            color = self.app._NEW_COLOR
+                            for i, r in enumerate(self.app.fav_view.get_model()):
+                                if i in c_ids:
+                                    r[Column.FAV_BACKGROUND] = color
+
+
             dialog = self.CleanupDialog(to_remove, transient_for=self.app.app_window)
 
             if dialog.run() == Gtk.ResponseType.OK:
-                bq_selected = self.app.check_bouquet_selection()
                 count = 0
                 for b, indexes in to_remove.items():
                     if b == bq_selected:
