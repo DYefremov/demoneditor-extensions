@@ -2,7 +2,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2023 Dmitriy Yefremov
+# Copyright (c) 2023-2025 Dmitriy Yefremov
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,20 +31,20 @@ import re
 from enum import IntEnum
 from itertools import groupby
 
-from gi.repository import Gtk, GLib
+from gi.repository import Gtk, Gdk, GLib
 
 from app.eparser import Service
 from app.eparser.ecommons import BqServiceType
 from app.eparser.iptv import MARKER_FORMAT, get_picon_id, get_fav_id
 from app.settings import SettingsType
 from app.ui.main_helper import update_toggle_model, update_popup_filter_model, get_base_itrs, scroll_to, on_popup_menu
-from app.ui.uicommons import IPTV_ICON, Column
+from app.ui.uicommons import IPTV_ICON, Column, UI_RESOURCES_PATH
 from extensions import BaseExtension
 
 
 class Streamimport(BaseExtension):
     LABEL = "Advanced streams import"
-    VERSION = "1.1"
+    VERSION = "1.2"
 
     def __init__(self, app):
         super().__init__(app)
@@ -104,6 +104,10 @@ class ImportDialog(Gtk.Window):
 
         self._chooser_button = builder.get_object("file_chooser_button")
         self._chooser_button.connect("file-set", self.on_file_set)
+        self._url_entry = builder.get_object("url_entry")
+        self._url_entry.connect("activate", self.on_url_set)
+        self._url_entry.connect("focus-out-event", lambda e, ev: e.set_name("GtkEntry"))
+
         self._input_text_view = builder.get_object("input_text_view")
         self._input_text_view.get_buffer().connect("paste-done", self.on_paste_text)
         builder.get_object("selected_renderer").connect("toggled", self.on_selected_toggled)
@@ -118,6 +122,11 @@ class ImportDialog(Gtk.Window):
         self.connect("delete-event", self.on_destroy)
         # Neutrino.
         builder.get_object("options_grid").set_visible(self._app.is_enigma)
+
+        style_provider = Gtk.CssProvider()
+        style_provider.load_from_path(f"{UI_RESOURCES_PATH}style.css")
+        self._url_entry.get_style_context().add_provider_for_screen(Gdk.Screen.get_default(), style_provider,
+                                                                    Gtk.STYLE_PROVIDER_PRIORITY_USER)
 
     def on_destroy(self, window, event):
         """ Used to prevent window deletion and destroying. """
@@ -138,6 +147,13 @@ class ImportDialog(Gtk.Window):
             return
 
         gen = self.update_from_file(path)
+        GLib.idle_add(lambda: next(gen, False), priority=GLib.PRIORITY_LOW)
+
+    def on_url_set(self, entry):
+        self.clear_data()
+        self._url_entry.set_progress_fraction(0)
+
+        gen = self.update_from_url(entry.get_text())
         GLib.idle_add(lambda: next(gen, False), priority=GLib.PRIORITY_LOW)
 
     def on_paste_text(self, buffer, clip):
@@ -166,6 +182,47 @@ class ImportDialog(Gtk.Window):
             yield from self.process_data(str(data, encoding=encoding, errors="ignore").splitlines())
 
             yield self._chooser_button.set_sensitive(True)
+
+    def update_from_url(self, url):
+        self._url_entry.set_name("GtkEntry" if url else "digit-entry")
+        if not url:
+            return
+
+        import requests
+
+        resp = requests.get(url, headers={}, timeout=5, stream=True)
+
+        if resp.status_code == 200:
+            downloaded = 0
+            # Get total playlist byte size
+            data_size = int(resp.headers.get("content-length", 15))
+            encoding = resp.encoding or resp.apparent_encoding or "utf-8"
+
+            from tempfile import TemporaryFile
+
+            with TemporaryFile() as tf:
+                completed = set()
+
+                for data in resp.iter_content(chunk_size=32):
+                    downloaded += len(data)
+                    tf.write(data)
+                    progress = downloaded / data_size
+                    done = int(100 * progress)
+                    yield True
+                    self._url_entry.set_progress_fraction(progress)
+                    if done % 25 == 0 and done not in completed:
+                        completed.add(done)
+                        self.log(f"Downloading playlist...{done}%" if done < 100 else "Playlist download complete.")
+                tf.seek(0)
+                yield from self.process_data(str(tf.read(), encoding=encoding, errors="ignore").splitlines())
+
+            if downloaded < data_size:
+                self.log("Error. The file size is incorrect.")
+        else:
+            msg = f"HTTP error {resp.status_code} while retrieving from {url}!"
+            self._app.show_error_message(msg)
+            self.log(msg)
+        yield True
 
     def process_data(self, lines):
         group = None
@@ -262,7 +319,7 @@ class ImportDialog(Gtk.Window):
 
         if not itr:
             msg = "Error. Load your data first!"
-            self._plugin.log(msg)
+            self.log(msg)
             self._app.show_error_message(msg)
             return
 
@@ -332,7 +389,7 @@ class ImportDialog(Gtk.Window):
                 srv = Service(None, None, IPTV_ICON, name, *aggr[0:3], st, picon, p_id, *s_aggr, url, fav_id, None)
                 grp_services.append(srv)
             else:
-                self._plugin.log(f"Import error: name[{name}], url[{url}], fav id[{fav_id}]")
+                self.log(f"Import error: name[{name}], url[{url}], fav id[{fav_id}]")
 
         return grp_services
 
@@ -347,6 +404,9 @@ class ImportDialog(Gtk.Window):
             key = f"{bq_name}:{bq_type}"
 
         return bq_name
+
+    def log(self, msg):
+        self._plugin.log(msg)
 
 
 if __name__ == "__main__":

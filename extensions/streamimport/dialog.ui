@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 
+<!-- Generated with glade 3.40.0
 
 The MIT License (MIT)
 
-Copyright (c) Dmitriy Yefremov 2023
+Copyright (c) Dmitriy Yefremov 2023-2025
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@ Author: Dmitriy Yefremov
   <!-- interface-license-type mit -->
   <!-- interface-name Advanced streams import -->
   <!-- interface-description Extension for DemonEditor -->
-  <!-- interface-copyright Dmitriy Yefremov 2023 -->
+  <!-- interface-copyright Dmitriy Yefremov 2023-2025 -->
   <!-- interface-authors Dmitriy Yefremov -->
   <object class="GtkFileFilter" id="file_filter">
     <mime-types>
@@ -172,59 +172,18 @@ Author: Dmitriy Yefremov
         <property name="can-focus">False</property>
         <property name="spacing">5</property>
         <child type="center">
-          <object class="GtkButtonBox" id="filter_box">
+          <object class="GtkEntry" id="url_entry">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Filter</property>
-            <property name="halign">center</property>
-            <property name="margin-end">5</property>
-            <property name="margin-top">5</property>
-            <property name="margin-bottom">5</property>
-            <property name="layout-style">expand</property>
-            <child>
-              <object class="GtkSearchEntry" id="filter_entry">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="primary-icon-name">edit-find-replace-symbolic</property>
-                <property name="primary-icon-activatable">False</property>
-                <property name="primary-icon-sensitive">False</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-                <property name="non-homogeneous">True</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkMenuButton" id="group_filter_button">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="focus-on-click">False</property>
-                <property name="receives-default">True</property>
-                <property name="popover">groups_popover</property>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Group</property>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="pack-type">end</property>
-                <property name="position">1</property>
-                <property name="secondary">True</property>
-                <property name="non-homogeneous">True</property>
-              </packing>
-            </child>
+            <property name="sensitive" bind-source="text_input_button" bind-property="active" bind-flags="invert-boolean">True</property>
+            <property name="can-focus">True</property>
+            <property name="valign">center</property>
+            <property name="primary-icon-name">insert-link-symbolic</property>
+            <property name="placeholder-text" translatable="yes">URL to the playlist...</property>
           </object>
           <packing>
-            <property name="expand">False</property>
-            <property name="fill">False</property>
-            <property name="position">1</property>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
           </packing>
         </child>
         <child>
@@ -277,6 +236,69 @@ Author: Dmitriy Yefremov
         <property name="expand">False</property>
         <property name="fill">True</property>
         <property name="position">0</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkSearchBar">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="search-mode-enabled">True</property>
+        <child>
+          <object class="GtkButtonBox" id="filter_box">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="tooltip-text" translatable="yes">Filter</property>
+            <property name="halign">center</property>
+            <property name="margin-end">5</property>
+            <property name="margin-top">5</property>
+            <property name="margin-bottom">5</property>
+            <property name="layout-style">expand</property>
+            <child>
+              <object class="GtkSearchEntry" id="filter_entry">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="primary-icon-name">edit-find-replace-symbolic</property>
+                <property name="primary-icon-activatable">False</property>
+                <property name="primary-icon-sensitive">False</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+                <property name="non-homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkMenuButton" id="group_filter_button">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="focus-on-click">False</property>
+                <property name="receives-default">True</property>
+                <property name="popover">groups_popover</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Group</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="pack-type">end</property>
+                <property name="position">1</property>
+                <property name="secondary">True</property>
+                <property name="non-homogeneous">True</property>
+              </packing>
+            </child>
+          </object>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">1</property>
       </packing>
     </child>
     <child>
@@ -342,7 +364,9 @@ Author: Dmitriy Yefremov
                       </attributes>
                     </child>
                     <child>
-                      <object class="GtkCellRendererText" id="name_renderer"/>
+                      <object class="GtkCellRendererText" id="name_renderer">
+                        <property name="ellipsize">end</property>
+                      </object>
                       <attributes>
                         <attribute name="text">1</attribute>
                       </attributes>
@@ -360,6 +384,7 @@ Author: Dmitriy Yefremov
                     <child>
                       <object class="GtkCellRendererText" id="group_renderer">
                         <property name="xalign">0.49000000953674316</property>
+                        <property name="ellipsize">end</property>
                       </object>
                       <attributes>
                         <attribute name="text">2</attribute>
