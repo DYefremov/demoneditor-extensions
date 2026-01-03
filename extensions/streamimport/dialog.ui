@@ -171,12 +171,15 @@ Author: Dmitriy Yefremov
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="spacing">5</property>
+        <property name="margin-top">5</property>
         <child type="center">
           <object class="GtkEntry" id="url_entry">
             <property name="visible">True</property>
             <property name="sensitive" bind-source="text_input_button" bind-property="active" bind-flags="invert-boolean">True</property>
             <property name="can-focus">True</property>
             <property name="valign">center</property>
+            <property name="margin-top">5</property>
+            <property name="margin-bottom">5</property>
             <property name="primary-icon-name">insert-link-symbolic</property>
             <property name="placeholder-text" translatable="yes">URL to the playlist...</property>
           </object>
@@ -242,6 +245,8 @@ Author: Dmitriy Yefremov
       <object class="GtkSearchBar">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="margin-start">5</property>
+        <property name="margin-end">5</property>
         <property name="search-mode-enabled">True</property>
         <child>
           <object class="GtkButtonBox" id="filter_box">
@@ -249,9 +254,6 @@ Author: Dmitriy Yefremov
             <property name="can-focus">False</property>
             <property name="tooltip-text" translatable="yes">Filter</property>
             <property name="halign">center</property>
-            <property name="margin-end">5</property>
-            <property name="margin-top">5</property>
-            <property name="margin-bottom">5</property>
             <property name="layout-style">expand</property>
             <child>
               <object class="GtkSearchEntry" id="filter_entry">
