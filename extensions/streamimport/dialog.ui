@@ -3,7 +3,7 @@
 
 The MIT License (MIT)
 
-Copyright (c) Dmitriy Yefremov 2023-2025
+Copyright (c) Dmitriy Yefremov 2023-2026
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@ Author: Dmitriy Yefremov
   <!-- interface-license-type mit -->
   <!-- interface-name Advanced streams import -->
   <!-- interface-description Extension for DemonEditor -->
-  <!-- interface-copyright Dmitriy Yefremov 2023-2025 -->
+  <!-- interface-copyright Dmitriy Yefremov 2023-2026 -->
   <!-- interface-authors Dmitriy Yefremov -->
   <object class="GtkFileFilter" id="file_filter">
     <mime-types>
@@ -171,14 +171,13 @@ Author: Dmitriy Yefremov
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="spacing">5</property>
-        <property name="margin-top">5</property>
         <child type="center">
           <object class="GtkEntry" id="url_entry">
             <property name="visible">True</property>
             <property name="sensitive" bind-source="text_input_button" bind-property="active" bind-flags="invert-boolean">True</property>
             <property name="can-focus">True</property>
             <property name="valign">center</property>
-            <property name="margin-top">5</property>
+            <property name="margin-top">10</property>
             <property name="margin-bottom">5</property>
             <property name="primary-icon-name">insert-link-symbolic</property>
             <property name="placeholder-text" translatable="yes">URL to the playlist...</property>
@@ -196,7 +195,7 @@ Author: Dmitriy Yefremov
             <property name="can-focus">False</property>
             <property name="tooltip-text" translatable="yes">Import m3u file</property>
             <property name="margin-start">5</property>
-            <property name="margin-top">5</property>
+            <property name="margin-top">10</property>
             <property name="margin-bottom">5</property>
             <property name="create-folders">False</property>
             <property name="filter">file_filter</property>
@@ -215,7 +214,7 @@ Author: Dmitriy Yefremov
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
             <property name="tooltip-text" translatable="yes">Import from clipboard</property>
-            <property name="margin-top">5</property>
+            <property name="margin-top">10</property>
             <property name="margin-bottom">5</property>
             <child>
               <object class="GtkImage" id="text_input_button_image">
@@ -348,6 +347,7 @@ Author: Dmitriy Yefremov
                 <property name="can-focus">True</property>
                 <property name="model">sort_model</property>
                 <property name="search-column">1</property>
+                <property name="tooltip-column">7</property>
                 <child internal-child="selection">
                   <object class="GtkTreeSelection"/>
                 </child>

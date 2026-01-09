@@ -2,7 +2,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2023-2025 Dmitriy Yefremov
+# Copyright (c) 2023-2026 Dmitriy Yefremov
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -29,15 +29,19 @@
 import os
 import re
 from enum import IntEnum
+from io import BytesIO
 from itertools import groupby
 
+import requests
 from gi.repository import Gtk, Gdk, GLib
 
+from app.commons import run_task
 from app.eparser import Service
 from app.eparser.ecommons import BqServiceType
 from app.eparser.iptv import MARKER_FORMAT, get_picon_id, get_fav_id
 from app.settings import SettingsType
-from app.ui.main_helper import update_toggle_model, update_popup_filter_model, get_base_itrs, scroll_to, on_popup_menu
+from app.ui.main_helper import update_toggle_model, update_popup_filter_model, get_base_itrs, scroll_to, on_popup_menu, \
+    get_pixbuf_from_data, get_base_model, get_base_paths
 from app.ui.uicommons import IPTV_ICON, Column, UI_RESOURCES_PATH
 from extensions import BaseExtension
 
@@ -122,6 +126,10 @@ class ImportDialog(Gtk.Window):
         self.connect("delete-event", self.on_destroy)
         # Neutrino.
         builder.get_object("options_grid").set_visible(self._app.is_enigma)
+        # Channel logos.
+        column = builder.get_object("name_column")
+        column.set_cell_data_func(builder.get_object("logo_renderer"), self.logo_data_func)
+        self._view.connect("query-tooltip", self.on_view_query_tooltip)
 
         style_provider = Gtk.CssProvider()
         style_provider.load_from_path(f"{UI_RESOURCES_PATH}style.css")
@@ -132,6 +140,46 @@ class ImportDialog(Gtk.Window):
         """ Used to prevent window deletion and destroying. """
         window.hide()
         return True
+
+    def logo_data_func(self, column, renderer, model, itr, data):
+        if not model.get_value(itr, self.Column.LOGO):
+            renderer.set_property("pixbuf", IPTV_ICON)
+
+    def on_view_query_tooltip(self, view, x, y, keyboard_mode, tooltip):
+        dest = view.get_dest_row_at_pos(x, y)
+        if not dest:
+            return False
+
+        path, pos = dest
+        model = view.get_model()
+        row = model[path][:]
+        tooltip.set_text(row[self.Column.NAME])
+        tooltip.set_icon(row[self.Column.LOGO])
+        view.set_tooltip_row(tooltip, path)
+
+        url = row[self.Column.LOGO_URL]
+        if url and not row[self.Column.LOGO]:
+            self.update_logo(url, model, path)
+
+        return True
+
+    @run_task
+    def update_logo(self, url, model, path):
+        itr = get_base_itrs([model.get_iter(path)], model)[0]
+        model = get_base_model(model)
+        try:
+            with requests.get(url=url, stream=True) as resp:
+                if resp.status_code == 200:
+                    buf = BytesIO()
+                    for data in resp.iter_content(chunk_size=32):
+                        buf.write(data)
+
+                    buf.seek(0)
+                    pix = get_pixbuf_from_data(buf.read(), 64, 64)
+                    if pix:
+                       GLib.idle_add(model.set_value, itr, self.Column.LOGO, pix)
+        except requests.exceptions.ConnectionError as e:
+            self.log(f"Error [update logo]: {e}")
 
     def clear_data(self, widget=None):
         self._model.clear()
@@ -187,8 +235,6 @@ class ImportDialog(Gtk.Window):
         self._url_entry.set_name("GtkEntry" if url else "digit-entry")
         if not url:
             return
-
-        import requests
 
         resp = requests.get(url, headers={}, timeout=5, stream=True)
 
