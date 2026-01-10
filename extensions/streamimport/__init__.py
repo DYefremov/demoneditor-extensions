@@ -347,15 +347,6 @@ class ImportDialog(Gtk.Window):
 
     def on_import(self, button):
         settings_type = self._app.app_settings.setting_type
-        service_rows = filter(lambda r: r[self.Column.SELECTED], self._view.get_model())
-
-        if settings_type is SettingsType.ENIGMA_2:
-            if not self._single_bq_button.get_active():
-                def grouper(row):
-                    return row[self.Column.GROUP]
-
-                service_rows = groupby(sorted(service_rows, key=grouper), key=grouper)
-
         model = self._app.bouquets_view.get_model()
 
         if settings_type is SettingsType.ENIGMA_2:
@@ -364,10 +355,20 @@ class ImportDialog(Gtk.Window):
             itr = model.get_iter(Gtk.TreePath.new_from_indices([len(model) - 1]))
 
         if not itr:
-            msg = "Error. Load your data first!"
-            self.log(msg)
-            self._app.show_error_message(msg)
+            self._app.show_error_message("Error. Load your data first!")
             return
+
+        service_rows = [r for r in self._view.get_model() if r[self.Column.SELECTED]]
+        if not service_rows:
+            self._app.show_error_message("Error. No channels selected!")
+            return
+
+        if settings_type is SettingsType.ENIGMA_2:
+            if not self._single_bq_button.get_active():
+                def grouper(row):
+                    return row[self.Column.GROUP]
+
+                service_rows = groupby(sorted(service_rows, key=grouper), key=grouper)
 
         root_path = model.get_path(itr)
         bq_itr = itr
