@@ -39,6 +39,14 @@
     "switchable": false,
     "ref": "oscamstatus?ref=main"
   },
+  "satnamedisplay": {
+    "label": "Satellite name display",
+    "description": "Enables display the satellite name instead of its position in the main list of services.",
+    "version": "1.0",
+    "embedded": true,
+    "switchable": false,
+    "ref": "satnamedisplay?ref=main"
+  },
   "sidformatselector": {
     "label": "SID format selector",
     "description": "Allows you to change the display format of the SID value in the main channel list.",
