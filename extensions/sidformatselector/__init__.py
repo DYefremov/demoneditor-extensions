@@ -67,7 +67,8 @@ class Sidformatselector(BaseExtension):
     def on_button_press(self, button, event):
         if event.get_event_type() == Gdk.EventType.BUTTON_PRESS and event.button == Gdk.BUTTON_SECONDARY:
             self._menu.popup_at_pointer()
-        return True
+            return True
+        return False
 
     def on_dec_toggled(self, item):
         self._is_dec = item.get_active()
