@@ -39,6 +39,14 @@
     "switchable": false,
     "ref": "oscamstatus?ref=main"
   },
+  "sidformatselector": {
+    "label": "SID format selector",
+    "description": "Allows you to change the display format of the SID value in the main channel list.",
+    "version": "1.0",
+    "embedded": true,
+    "switchable": false,
+    "ref": "sidformatselector?ref=main"
+  },
   "streamimport": {
     "label": "Advanced streams import",
     "description": "Allows you to import IPTV streams from various sources.",
