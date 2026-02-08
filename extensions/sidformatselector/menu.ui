@@ -1,5 +1,10 @@
 <interface domain="demon-editor">
-  <template class="SidMenu" parent="GtkMenu">
+  <!-- interface-license-type mit -->
+  <!-- interface-name SID format selector -->
+  <!-- interface-description Extension for DemonEditor -->
+  <!-- interface-copyright Dmitriy Yefremov 2026 -->
+  <!-- interface-authors Dmitriy Yefremov -->
+  <object class="GtkMenu" id="menu">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <child>
@@ -37,5 +42,5 @@
         <property name="group">hex_item</property>
       </object>
     </child>
-  </template>
+  </object>
 </interface>

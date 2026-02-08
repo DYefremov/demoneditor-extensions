@@ -25,24 +25,12 @@
 # Author: Dmitriy Yefremov
 #
 
-
 import os
 
 from gi.repository import Gdk, Gtk
 
 from app.ui.uicommons import Column
 from extensions import BaseExtension
-
-
-@Gtk.Template(filename=f"{os.path.dirname(__file__)}{os.sep}menu.ui")
-class SidMenu(Gtk.Menu):
-    __gtype_name__ = "SidMenu"
-
-    dec_item = Gtk.Template.Child()
-
-    @property
-    def is_dec(self):
-        return self.dec_item.get_active()
 
 
 class Sidformatselector(BaseExtension):
@@ -65,8 +53,11 @@ class Sidformatselector(BaseExtension):
         button.connect("button-press-event", self.on_button_press)
 
         self._is_dec = False
-        self._menu = SidMenu()
-        self._menu.dec_item.connect("toggled", self.on_dec_toggled)
+        _base_path = os.path.dirname(__file__)
+        builder = Gtk.Builder.new_from_file(f"{_base_path}{os.sep}menu.ui")
+        self._menu = builder.get_object("menu")
+        self._dec_menu_item = builder.get_object("dec_item")
+        self._dec_menu_item.connect("toggled", self.on_dec_toggled)
 
     def sid_data_func(self, column, renderer, model, itr, data):
         if self._is_dec:
@@ -79,7 +70,7 @@ class Sidformatselector(BaseExtension):
         return True
 
     def on_dec_toggled(self, item):
-        self._is_dec = self._menu.is_dec
+        self._is_dec = item.get_active()
 
 
 if __name__ == "__main__":
