@@ -32,6 +32,7 @@ import xml.etree.ElementTree as ETree
 from gi.repository import GLib
 
 from app.eparser.satxml import get_pos_str
+from app.ui.dialogs import translate
 from app.ui.uicommons import Column
 from extensions import BaseExtension
 
@@ -53,6 +54,7 @@ class Satnamedisplay(BaseExtension):
         self._satellites = {}
         self._is_update = False
 
+        column.set_title(f"{translate('Pos')} [{translate('Satellite')}]")
         renderer = cells[0]
         column.set_cell_data_func(renderer, self.sat_name_data_func)
         app.connect("profile-changed", self.on_profile_changed)
