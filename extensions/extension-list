@@ -50,7 +50,7 @@
   "satnamedisplay": {
     "label": "Satellite name display",
     "description": "Enables display the satellite name instead of its position in the main list of services.",
-    "version": "1.0",
+    "version": "1.1",
     "embedded": true,
     "switchable": false,
     "ref": "satnamedisplay?ref=main"

@@ -40,7 +40,7 @@ from extensions import BaseExtension
 class Satnamedisplay(BaseExtension):
     LABEL = "Satellite name display"
     EMBEDDED = True
-    VERSION = "1.0"
+    VERSION = "1.1"
 
     def __init__(self, app):
         super().__init__(app)
