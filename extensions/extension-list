@@ -1,4 +1,12 @@
 {
+  "columnsorder": {
+    "label": "Columns order",
+    "description": "Enables the ability to change columns order in the main views.",
+    "version": "1.0",
+    "embedded": true,
+    "switchable": false,
+    "ref": "columnsorder?ref=main"
+  },
   "epgexport": {
     "label": "EPG Export",
     "description": "Allows you to export XMLTV data as an epg.dat file from the EPG tab to the receiver.",
