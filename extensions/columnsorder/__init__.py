@@ -26,10 +26,7 @@
 #
 
 
-from gi.repository import Gtk
-
 from app.commons import run_idle
-from app.ui.dialogs import translate, show_dialog, DialogType
 from app.ui.uicommons import Page
 from extensions import BaseExtension
 
@@ -45,24 +42,19 @@ class Columnsorder(BaseExtension):
         self._enabled = False
         self._initialized = set()
 
-        self.update_view_state(app.fav_view)
         app.connect("page-changed", self.on_page_changed)
 
     def exec(self):
-        msg = f"{translate('This may affect the drag-and-drop functionality!')}\n\n\t\t{translate('Are you sure?')}"
-        if show_dialog(DialogType.QUESTION, self.app.app_window, msg) != Gtk.ResponseType.OK:
-            return True
-
         self._enabled = True
         self.on_page_changed(self.app, self.app.page)
 
     def stop(self):
         self._enabled = False
         [self.update_page(p) for p in self._initialized]
+        self._initialized.clear()
 
     @run_idle
     def update_view_state(self, view):
-        view.set_reorderable(self._enabled)
         [column.set_reorderable(self._enabled) for column in filter(lambda c: c.get_visible(), view.get_columns())]
 
     def on_page_changed(self, app, page):
@@ -74,6 +66,7 @@ class Columnsorder(BaseExtension):
 
     def update_page(self, page):
         if page is Page.SERVICES:
+            self.update_view_state(self.app.fav_view)
             self.update_view_state(self.app.services_view)
             self.update_view_state(self.app.iptv_services_view)
         elif page is Page.SATELLITE:
