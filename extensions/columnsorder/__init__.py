@@ -37,7 +37,7 @@ from extensions import BaseExtension
 class Columnsorder(BaseExtension):
     LABEL = "Columns order"
     SWITCHABLE = True
-    VERSION = "1.0"
+    VERSION = "1.1"
 
     def __init__(self, app):
         super().__init__(app)

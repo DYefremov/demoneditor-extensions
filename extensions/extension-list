@@ -2,9 +2,9 @@
   "columnsorder": {
     "label": "Columns order",
     "description": "Enables the ability to change columns order in the main views.",
-    "version": "1.0",
-    "embedded": true,
-    "switchable": false,
+    "version": "1.1",
+    "embedded": false,
+    "switchable": true,
     "ref": "columnsorder?ref=main"
   },
   "epgexport": {
