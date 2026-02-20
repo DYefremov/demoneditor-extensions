@@ -33,32 +33,21 @@ from extensions import BaseExtension
 
 class Columnsorder(BaseExtension):
     LABEL = "Columns order"
-    SWITCHABLE = True
+    EMBEDDED = True
     VERSION = "1.1"
 
     def __init__(self, app):
         super().__init__(app)
 
-        self._enabled = False
         self._initialized = set()
-
         app.connect("page-changed", self.on_page_changed)
-
-    def exec(self):
-        self._enabled = True
-        self.on_page_changed(self.app, self.app.page)
-
-    def stop(self):
-        self._enabled = False
-        [self.update_page(p) for p in self._initialized]
-        self._initialized.clear()
 
     @run_idle
     def update_view_state(self, view):
-        [column.set_reorderable(self._enabled) for column in filter(lambda c: c.get_visible(), view.get_columns())]
+        [column.set_reorderable(True) for column in filter(lambda c: c.get_visible(), view.get_columns())]
 
     def on_page_changed(self, app, page):
-        if not self._enabled or page in self._initialized:
+        if page in self._initialized:
             return
 
         self._initialized.add(page)
