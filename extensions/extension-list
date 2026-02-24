@@ -70,5 +70,13 @@
     "embedded": false,
     "switchable": false,
     "ref": "streamimport?ref=main"
+  },
+  "undo": {
+    "label": "Undo",
+    "description": "Enables the Ctrl + Z keyboard shortcut to undo deleting channels in the Favorites list.",
+    "version": "1.0",
+    "embedded": true,
+    "switchable": false,
+    "ref": "undo?ref=main"
   }
 }
