@@ -78,5 +78,13 @@
     "embedded": true,
     "switchable": false,
     "ref": "undo?ref=main"
+  },
+  "viewxmltvcache": {
+    "label": "View XMLTV cache",
+    "description": "Adds the ability to view the current XMLTV cache for the EPG tab.",
+    "version": "1.0",
+    "embedded": true,
+    "switchable": false,
+    "ref": "viewxmltvcache?ref=main"
   }
 }
