@@ -36,7 +36,7 @@ from extensions import BaseExtension
 class Viewxmltvcache(BaseExtension):
     LABEL = "View XMLTV cache."
     EMBEDDED = True
-    VERSION = "1.0"
+    VERSION = "1.1"
 
     def __init__(self, app):
         super().__init__(app)
