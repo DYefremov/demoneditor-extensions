@@ -129,7 +129,7 @@ class Xmltvtonamecache(BaseExtension):
     def init_save_button(self):
         box = self._src_xmltv_button.get_parent().get_parent()
         self._save_button = Gtk.Button.new_from_icon_name("document-save-symbolic", Gtk.IconSize.BUTTON)
-        self._save_button.set_tooltip_text(translate("Save to EPG name cache."))
+        self._save_button.set_tooltip_text(translate("Save to cache"))
         self._save_button.set_visible(True)
         self._save_button.set_sensitive(True)
         self._save_button.connect("clicked", self.on_cache_save)
