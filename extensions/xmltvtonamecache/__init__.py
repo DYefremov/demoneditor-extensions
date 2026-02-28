@@ -42,6 +42,7 @@ class Xmltvtonamecache(BaseExtension):
         super().__init__(app)
 
         self._reader = None
+        self._save_button = None
         self._multi_epg_button = None
         self._src_xmltv_button = None
         self._name_cache = EpgCache.NAME_CACHE
@@ -118,8 +119,24 @@ class Xmltvtonamecache(BaseExtension):
         if self._reader and id_name in self._reader.cache:
             self._name_cache[src_name] = id_name
             self.app.emit("epg-cache-initialized", self._name_cache)
+            self._save_button.set_sensitive(True) if self._save_button else self.init_save_button()
         else:
             msg = f"{translate('Operation not allowed in this context!')} {translate('Full XMLTV cache not loaded!')}"
             self.app.show_error_message(msg)
 
         context.finish(True, False, time)
+
+    def init_save_button(self):
+        box = self._src_xmltv_button.get_parent().get_parent()
+        self._save_button = Gtk.Button.new_from_icon_name("document-save-symbolic", Gtk.IconSize.BUTTON)
+        self._save_button.set_tooltip_text(translate("Save to EPG name cache."))
+        self._save_button.set_visible(True)
+        self._save_button.set_sensitive(True)
+        self._save_button.connect("clicked", self.on_cache_save)
+        self._src_xmltv_button.bind_property("active", self._save_button, "visible")
+        box.pack_end(self._save_button, False, True, 0)
+
+    def on_cache_save(self, button):
+        if show_dialog(DialogType.QUESTION, self.app.app_window, translate('Are you sure?')) == Gtk.ResponseType.OK:
+            EpgCache.update_name_cache(self.app.app_settings.default_data_path, self._name_cache)
+            button.set_sensitive(False)
