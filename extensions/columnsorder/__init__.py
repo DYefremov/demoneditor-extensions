@@ -64,8 +64,10 @@ class Columnsorder(BaseExtension):
             self.update_view_state(self.app._satellite_tool._ter_tr_view)
             self.update_view_state(self.app._satellite_tool._cable_tr_view)
         elif page is page.PICONS:
-            self.update_view_state(self.app._picon_manager._picons_src_view)
-            self.update_view_state(self.app._picon_manager._picons_dest_view)
+            self.update_view_state(self.app._picon_manager._providers_view)
+            if not hasattr(self.app, "VERSION") or self.app.VERSION < "3.15.0":
+                self.update_view_state(self.app._picon_manager._picons_src_view)
+                self.update_view_state(self.app._picon_manager._picons_dest_view)
         elif page is Page.EPG:
             self.update_view_state(self.app._epg_tool._view)
         elif page is Page.TIMERS:
